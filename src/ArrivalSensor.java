@@ -5,7 +5,7 @@
  * NOT_REACHED_FLOOR indicates the elevator has not reached the floor
  * @author Muneeb Nasir
  */
-public enum ArrivalIndicator {
+public enum ArrivalSensor {
     REACHED_FLOOR,
-    NOT_REACHED_FLOOR;
+    NOT_REACHED_FLOOR
 }

@@ -30,5 +30,10 @@ public class Main
 		List<String[]> elevatorData = new ArrayList<String[]>();
 		Main main = new Main();
 		elevatorData = main.csvReader();
+		Thread test;
+		Schduler ss = new Schduler();
+
+		test = new Thread(new Elevator(1, ss),"Elevator");
+		test.start();
 	}
 }

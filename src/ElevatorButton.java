@@ -7,5 +7,5 @@
  */
 public enum ElevatorButton {
     ON,
-    OFF;
+    OFF
 }

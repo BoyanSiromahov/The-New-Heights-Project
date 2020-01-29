@@ -4,5 +4,5 @@
  */
 public enum  ElevatorDoor {
     OPEN,
-    CLOSE;
+    CLOSE
 }

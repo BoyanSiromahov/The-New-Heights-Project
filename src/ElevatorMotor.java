@@ -9,5 +9,5 @@
 public enum ElevatorMotor {
     UPWARD,
     DOWNWARD,
-    STOP;
+    STOP
 }
