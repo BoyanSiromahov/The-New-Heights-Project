@@ -1,3 +1,5 @@
+package FloorSubSystem;
+import ElevatorSubSystem.Direction;
 
 public class Floor {
 
