@@ -10,34 +10,11 @@ import SchedulerSubSystem.Scheduler;
 
 public class Main 
 {
-	public static List<String> csvReader()
-	{ 
-	    String file = "csv.txt";
-	    List<String> content = new ArrayList<>();
-
-	    BufferedReader br;
-		try {
-			br = new BufferedReader(new FileReader(file));
-	        String line = "";
-	        while ((line = br.readLine()) != null) 
-	        {
-	        	if(!line.contains("Time,")) {
-	        		content.add(line);
-	            }
-	        }
-		} catch (IOException e) {
-			System.out.println("fail");
-		}
-
-	    return content;
-	}
 	
 	public static void main(String[] args) 
 	{
-		List<String> elevatorData = new ArrayList<String>();
-		elevatorData = csvReader();
 		Thread elevatorA;
-		Scheduler ss = new Scheduler(csvReader());
+		Scheduler ss = new Scheduler();
 
 		elevatorA = new Thread(new Elevator(1, ss),"Elevator");
 		elevatorA.start();
