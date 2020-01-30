@@ -42,6 +42,7 @@ public class Elevator implements Runnable{
     /**
      * The Constructor for the Elevator Class. Each elevator is assigned a unique elevator number and is
      * connected to the main Scheduler; elevator control system.
+     * 
      * @param elevatorNumber, The Unique Elevator Number
      * @param elevatorScheduler, The Main Scheduler
      */
@@ -60,8 +61,8 @@ public class Elevator implements Runnable{
      * This can be used to initialize the Elevator Floor Buttons and the Arrival Sensor for each Elevator
      */
     private void initialiseDataSet(){
-        elevatorFloorButtons = new HashMap(){};
-        elevatorArrivalSensor = new HashMap(){};
+        elevatorFloorButtons = new HashMap<Integer, ElevatorButton>(){};
+        elevatorArrivalSensor = new HashMap<Integer, ArrivalSensor>(){};
         for(int i = GROUND_FLOOR; i < TOTAL_FLOORS; i++){
             elevatorFloorButtons.put(i, ElevatorButton.OFF);
             elevatorArrivalSensor.put(i, ArrivalSensor.NOT_REACHED_FLOOR);
@@ -209,23 +210,23 @@ public class Elevator implements Runnable{
                     LOGGER.info(String.format("Elevator %d Currently In Service", elevatorNumber));
                 }
                 if(door == ElevatorDoor.OPEN){
-                    if(systemSchedulerCommand.getFloorNum() > currentElevatorLevel &&
-                            systemSchedulerCommand.getFloorNum() <= TOTAL_FLOORS){
+                    if(systemSchedulerCommand.getDestinationFloor() > currentElevatorLevel &&
+                            systemSchedulerCommand.getDestinationFloor() <= TOTAL_FLOORS){
                         //MOVE UP
-                        elevatorFloorButtons.replace(systemSchedulerCommand.getFloorNum(), ElevatorButton.ON);
+                        elevatorFloorButtons.replace(systemSchedulerCommand.getDestinationFloor(), ElevatorButton.ON);
                         closeElevatorDoor();
-                        requestSuccessful = moveElevator(systemSchedulerCommand.getFloorNum(),
+                        requestSuccessful = moveElevator(systemSchedulerCommand.getDestinationFloor(),
                                 systemSchedulerCommand.getRequestedDirection());
-                    }else if(systemSchedulerCommand.getFloorNum() < currentElevatorLevel &&
-                            systemSchedulerCommand.getFloorNum() >= GROUND_FLOOR){
+                    }else if(systemSchedulerCommand.getDestinationFloor() < currentElevatorLevel &&
+                            systemSchedulerCommand.getDestinationFloor() >= GROUND_FLOOR){
                         // MOVE DOWNWARD
-                        elevatorFloorButtons.replace(systemSchedulerCommand.getFloorNum(), ElevatorButton.ON);
+                        elevatorFloorButtons.replace(systemSchedulerCommand.getDestinationFloor(), ElevatorButton.ON);
                         closeElevatorDoor();
-                        requestSuccessful = moveElevator(systemSchedulerCommand.getFloorNum(),
+                        requestSuccessful = moveElevator(systemSchedulerCommand.getDestinationFloor(),
                                 systemSchedulerCommand.getRequestedDirection());
                     }else{
                         LOGGER.warning(String.format("Elevator %d Request for Floor %d Invalid", elevatorNumber,
-                                systemSchedulerCommand.getFloorNum()));
+                                systemSchedulerCommand.getDestinationFloor()));
                     }
                 }else{
                     //Add Logic for handling the elevator movement
