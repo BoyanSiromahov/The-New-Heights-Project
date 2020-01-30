@@ -1,3 +1,6 @@
+/*
+ * 
+ */
 package ElevatorSubSystem;
 /**
  * This Enum class is used to keep track of the Floor Button Interaction with the User inside the elevator

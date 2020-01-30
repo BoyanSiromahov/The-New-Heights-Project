@@ -12,13 +12,7 @@ import java.util.*;
  * @author Muneeb Nasir
  */
 public class Elevator implements Runnable{
-    private static Logger LOGGER = null;
 
-    static {
-        System.setProperty("java.util.logging.SimpleFormatter.format",
-                "[%1$tF %1$tT] [%4$-7s] %5$s %n");
-        LOGGER = Logger.getLogger(Elevator.class.getName());
-    }
     private static final int DOOR_OPENING_CLOSING_DELAY  = 2;
     private static final int ELEVATOR_MOVING_TIME  = 3;
     private static final int GROUND_FLOOR  = 1;
@@ -72,7 +66,7 @@ public class Elevator implements Runnable{
         try {
             Thread.sleep(seconds * 1000);
         } catch (InterruptedException e) {
-            LOGGER.warning(String.format("IOException: %s%n", e));
+            System.err.print(e);
         }
     }
 
@@ -98,31 +92,7 @@ public class Elevator implements Runnable{
      * completed or failure happened during the processing.
      */
     public boolean receiveAndCheckSchedulerRequest() {
-        String output = "";
-        if(!commandRecieved.isEmpty()){
-            for(Floor item : commandRecieved){
-                if(elevatorNumber == item.getElevatorNumber()){
-                    LOGGER.info(String.format("Elevator %d Received Request From Scheduler", elevatorNumber));
-                    //TO DO
-                    // TO BE REMOVED WHEN THE TIME IS ADDED TO FLOOR
-                    Date today = new Date();
-                    LOGGER.info(String.format("Scheduler Sent Elevator: %d Request At: %s", elevatorNumber,
-                            today.toString()));
-                    LOGGER.info(String.format("Elevator %d Requested At Floor: %d ", elevatorNumber,
-                            item.getCurrentFloor()));
-                    LOGGER.info(String.format("Elevator %d Destination Floor: %d ", elevatorNumber,
-                            item.getDestinationFloorNum()));
-                    LOGGER.info(String.format("Elevator %d Requested Direction: %s", elevatorNumber,
-                            item.getRequestedDirection().toString()));
-                }
-            }
-            //After the Command Has Been Processed Empty The Command Queue
-            commandRecieved.clear();
-            LOGGER.info("Scheduler Request Processing Completed");
-            return true;
-        }else{
-            LOGGER.warning("Scheduler Sent An Empty Request");
-        }
+
         return false;
     }
 
@@ -140,7 +110,7 @@ public class Elevator implements Runnable{
                     // TO BE DONE ONCE THE COMMAND EXECUTION HAS BEEN SUCCESSFUL
                     // notifyAll();
                 }else{
-                    LOGGER.warning("\nScheduler Request PROCESSING FAILED\n");
+
                 }
 
             }
