@@ -13,13 +13,13 @@ import java.util.Date;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-
+import ElevatorSubSystem.Direction; 
 public class Parser 
 {
 	private Date startTime;
 	private int startFloor;
 	private int endFloor;
-	private String direction;
+	private Direction direction;
 	public Parser()
 	{
 		startTime = null;
@@ -55,9 +55,12 @@ public class Parser
 		List<Parser> newList = new ArrayList<Parser>();
 		Parser tempParser;
 		int number;
+		Direction direction = null;
 		
-		DateFormat standard = new SimpleDateFormat("mm:ss.SSS");
+		DateFormat standard = new SimpleDateFormat("mm:ss.SSS"); // Minutes/seconds/milliseconds
 	    Date date = null;
+	    
+	    //Changing data to proper types
 		for (int i=0; i<originaList.size(); i++)
 	    {
 			tempParser = new Parser();
@@ -84,7 +87,8 @@ public class Parser
 	    		}
 	    		else if (j==3)
 	    		{
-	    			tempParser.setDirection(originaList.get(i)[j]);
+	    			direction = Direction.valueOf(originaList.get(i)[j]);
+	    			tempParser.setDirection(direction);
 	    		}
 	    	}
 	    	newList.add(tempParser);
@@ -116,11 +120,11 @@ public class Parser
 		this.endFloor = endFloor;
 	}
 
-	public String getDirection() {
+	public Direction getDirection() {
 		return direction;
 	}
 
-	public void setDirection(String direction) {
+	public void setDirection(Direction direction) {
 		this.direction = direction;
 	}
 }
