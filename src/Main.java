@@ -11,7 +11,6 @@ import Util.Parser;
  */
 public class Main 
 {
-
 	public static void main(String[] args) throws ParseException 
 	{
 		List<String[]> csvContent = new ArrayList<String[]>();
@@ -20,5 +19,11 @@ public class Main
 		
 		csvContent = parser.csvReader();
 		elevatorData = parser.makeList(csvContent);
+  
+  	Thread elevatorA;
+		Scheduler ss = new Scheduler();
+
+		elevatorA = new Thread(new Elevator(1, ss),"Elevator");
+		elevatorA.start();
 	}
 }
