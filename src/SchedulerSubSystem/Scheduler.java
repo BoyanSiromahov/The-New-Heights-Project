@@ -51,6 +51,7 @@ public class Scheduler implements Runnable{
 				e.printStackTrace();
 			}
 		}
+		elevatorArrived = false;
 		notifyAll();
 		return arrivedFloor;
 	}
@@ -61,16 +62,7 @@ public class Scheduler implements Runnable{
 		notifyAll();
 	}
 	
-	
-
-	@Override
-	public void run() {
-		
-		
-	}
-
 	public synchronized void elevatorBoarded() {
-		elevatorArrived = false;
 		elevatorBoarded = true;
 		System.out.println("elevator leaving to dest");//muneeb
 		notifyAll();
@@ -88,6 +80,11 @@ public class Scheduler implements Runnable{
 		System.out.println("elevator leaving to dest");	//muneeb
 	}	
 
+	@Override
+	public void run() {
+		
+		
+	}
 
 
 }
