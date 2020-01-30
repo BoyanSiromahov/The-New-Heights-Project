@@ -1,19 +1,26 @@
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+/**
+	 * @author Shaun Gordon
+	 */
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import Util.Parser;
 
-import ElevatorSubSystem.Elevator;
-import SchedulerSubSystem.Scheduler;
-
+/**
+ * The Class Main.
+ */
 public class Main 
 {
-	
-	public static void main(String[] args) 
+	public static void main(String[] args) throws ParseException 
 	{
-		Thread elevatorA;
+		List<String[]> csvContent = new ArrayList<String[]>();
+		List<Parser> elevatorData = new ArrayList<Parser>();
+		Parser parser = new Parser();
+		
+		csvContent = parser.csvReader();
+		elevatorData = parser.makeList(csvContent);
+  
+  	Thread elevatorA;
 		Scheduler ss = new Scheduler();
 
 		elevatorA = new Thread(new Elevator(1, ss),"Elevator");
