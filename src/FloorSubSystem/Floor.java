@@ -8,18 +8,19 @@ public class Floor {
     private int destinationFloor;
     private int currentFloor;
 
-    Floor(int num, Direction direction){
+    public Floor(int num, Direction direction){
         elevatorNumber = 1;
         currentFloor = 1;
         requestedDirection = direction;
         destinationFloor = num;
     }
-    public int getFloorNum(){
+    public int getDestinationFloorNum(){
         return destinationFloor;
     }
     public int getElevatorNumber(){
         return elevatorNumber;
     }
+    public int getCurrentFloor(){ return currentFloor; }
     public Direction getRequestedDirection(){
         return requestedDirection;
     }

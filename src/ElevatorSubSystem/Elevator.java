@@ -1,9 +1,8 @@
 package ElevatorSubSystem;
-import java.util.logging.Logger;
 
+import java.util.logging.Logger;
 import FloorSubSystem.Floor;
 import SchedulerSubSystem.Scheduler;
-
 import java.util.*;
 
 /**
@@ -93,145 +92,38 @@ public class Elevator implements Runnable{
         elevatorDelay(DOOR_OPENING_CLOSING_DELAY);
     }
 
-    /**
-     * The Main Function that is used to control the movement of the elevator according the Scheduler Request
-     * @param destinationFloor, The requested destination floor
-     * @param elevatorDirection, The user-requested direction
-     * @return True when the request has been executed correctly, False if the request is not executed and request
-     * added in the waiting queue
-     */
-    public boolean moveElevator(int destinationFloor, Direction elevatorDirection){
-        switch (elevatorDirection) {
-            case DOWN:
-                if(door == ElevatorDoor.CLOSE){
-                    if(motor == ElevatorMotor.STOP || motor == ElevatorMotor.DOWNWARD){
-                        LOGGER.info(String.format("Elevator Moving %d Down to Floor Number: %d From: %d",
-                                elevatorNumber, destinationFloor, currentElevatorLevel));
-                        while(currentElevatorLevel >= GROUND_FLOOR && currentElevatorLevel > destinationFloor){
-                            currentElevatorLevel -= 1;
-                            elevatorDelay(ELEVATOR_MOVING_TIME);
-                            LOGGER.info(String.format("Elevator %d Moving Down to Floor Number: %d From: %d",
-                                    elevatorNumber, destinationFloor, currentElevatorLevel));
-                        }
-                        motor = ElevatorMotor.DOWNWARD;
-                        LOGGER.info(String.format("Elevator %d Has Reached Floor Number: %d \n", elevatorNumber,
-                                destinationFloor));
-                        elevatorArrivalSensor.replace(destinationFloor, ArrivalSensor.REACHED_FLOOR);
-                        motor = ElevatorMotor.STOP;
-                        openElevatorDoor();
-                        return true;
-                    }else{
-                        //Elevator Movement in a different direction
-                        LOGGER.info(String.format("Elevator %d Not Moving In The Requested Direction", elevatorNumber));
-                        LOGGER.info(String.format("Elevator %d Current Status: %s", elevatorNumber, motor.toString()));
-                        addFloorToQueue(destinationFloor, elevatorDirection);
-                        return false;
-                    }
-                }else{
-                    //Elevator Currently Stopped at a Floor
-                    LOGGER.info(String.format("Elevator %d Currently Stopped at floor %d", elevatorNumber,
-                            currentElevatorLevel));
-                    addFloorToQueue(destinationFloor, elevatorDirection);
-                    closeElevatorDoor();
-                    return false;
-                }
-
-            case UP:
-                if(door == ElevatorDoor.CLOSE){
-                    if(motor == ElevatorMotor.STOP || motor == ElevatorMotor.UPWARD){
-                        LOGGER.info(String.format("Elevator %d Moving UP To Floor Number: %d From: %d",
-                                elevatorNumber, destinationFloor, currentElevatorLevel));
-                        while (currentElevatorLevel < TOTAL_FLOORS && currentElevatorLevel < destinationFloor){
-                            currentElevatorLevel += 1;
-                            elevatorDelay(ELEVATOR_MOVING_TIME);
-                            LOGGER.info(String.format("Elevator %d Moving UP To Floor Number: %d From: %d",
-                                    elevatorNumber, destinationFloor, currentElevatorLevel));
-                        }
-                        motor = ElevatorMotor.UPWARD;
-                        LOGGER.info(String.format("Elevator %d Has Reached Floor Number: %d \n", elevatorNumber,
-                                destinationFloor));
-                        elevatorArrivalSensor.replace(destinationFloor, ArrivalSensor.REACHED_FLOOR);
-                        motor = ElevatorMotor.STOP;
-                        openElevatorDoor();
-                        return true;
-                    }else{
-                        //Elevator Movement in a different direction
-                        LOGGER.info(String.format("Elevator %d Not Moving In The Requested Direction", elevatorNumber));
-                        LOGGER.info(String.format("Elevator %d Current Status: %s", elevatorNumber, motor.toString()));
-                        addFloorToQueue(destinationFloor, elevatorDirection);
-                        return false;
-                    }
-
-                }else{
-                    //Elevator Currently Stopped at a Floor
-                    LOGGER.info(String.format("Elevator %d Currently Stopped at floor %d", elevatorNumber,
-                            currentElevatorLevel));
-                    addFloorToQueue(destinationFloor, elevatorDirection);
-                    closeElevatorDoor();
-                    return false;
-                }
-
-            default:
-                LOGGER.warning(String.format("Invalid Movement Direction %s Specified", elevatorDirection.toString()));
-                return false;
-        }
-    }
-
-    /**
-     * Adds the Floor to the Waiting Queue If a new request was received during the movement of the elevator in the
-     * requested direction. This Waiting Queue is is processed after the current request if completed.
-     * @param requestedFloor, The Destination Floor Number
-     * @param requestedDirection, The Requested Direction
-     */
-    private void addFloorToQueue(int requestedFloor, Direction requestedDirection){
-        //floors.add(new Floor(requestedFloor));
-        elevatorFloorButtons.replace(requestedFloor, ElevatorButton.ON);
-        elevatorArrivalSensor.replace(requestedFloor, ArrivalSensor.NOT_REACHED_FLOOR);
-    }
-
     /***
      * The Scheduler's received request is analyzed and processed
      * @return True, when the request has been executed completely. False, when the request execution was not
      * completed or failure happened during the processing.
      */
-    public boolean checkSchedulerRequest(){
-        boolean requestSuccessful = false;
-        //Retrieve All Commands Sent From the Scheduler
-        while (!commandRecieved.isEmpty()) {
-            // Gets the sent Floor Request associated with the Selected Elevator from the Scheduler
-            Floor systemSchedulerCommand = floors.poll();
-
-            if(systemSchedulerCommand != null){
-                if (elevatorNumber == systemSchedulerCommand.getElevatorNumber()) {
-                    LOGGER.info(String.format("Elevator %d Currently In Service", elevatorNumber));
+    public boolean receiveAndCheckSchedulerRequest() {
+        String output = "";
+        if(!commandRecieved.isEmpty()){
+            for(Floor item : commandRecieved){
+                if(elevatorNumber == item.getElevatorNumber()){
+                    LOGGER.info(String.format("Elevator %d Received Request From Scheduler", elevatorNumber));
+                    //TO DO
+                    // TO BE REMOVED WHEN THE TIME IS ADDED TO FLOOR
+                    Date today = new Date();
+                    LOGGER.info(String.format("Scheduler Sent Elevator: %d Request At: %s", elevatorNumber,
+                            today.toString()));
+                    LOGGER.info(String.format("Elevator %d Requested At Floor: %d ", elevatorNumber,
+                            item.getCurrentFloor()));
+                    LOGGER.info(String.format("Elevator %d Destination Floor: %d ", elevatorNumber,
+                            item.getDestinationFloorNum()));
+                    LOGGER.info(String.format("Elevator %d Requested Direction: %s", elevatorNumber,
+                            item.getRequestedDirection().toString()));
                 }
-                if(door == ElevatorDoor.OPEN){
-                    if(systemSchedulerCommand.getFloorNum() > currentElevatorLevel &&
-                            systemSchedulerCommand.getFloorNum() <= TOTAL_FLOORS){
-                        //MOVE UP
-                        elevatorFloorButtons.replace(systemSchedulerCommand.getFloorNum(), ElevatorButton.ON);
-                        closeElevatorDoor();
-                        requestSuccessful = moveElevator(systemSchedulerCommand.getFloorNum(),
-                                systemSchedulerCommand.getRequestedDirection());
-                    }else if(systemSchedulerCommand.getFloorNum() < currentElevatorLevel &&
-                            systemSchedulerCommand.getFloorNum() >= GROUND_FLOOR){
-                        // MOVE DOWNWARD
-                        elevatorFloorButtons.replace(systemSchedulerCommand.getFloorNum(), ElevatorButton.ON);
-                        closeElevatorDoor();
-                        requestSuccessful = moveElevator(systemSchedulerCommand.getFloorNum(),
-                                systemSchedulerCommand.getRequestedDirection());
-                    }else{
-                        LOGGER.warning(String.format("Elevator %d Request for Floor %d Invalid", elevatorNumber,
-                                systemSchedulerCommand.getFloorNum()));
-                    }
-                }else{
-                    //Add Logic for handling the elevator movement
-                }
-            }else {
-                LOGGER.warning("Elevator %d Received Invalid Request From Scheduler");
             }
+            //After the Command Has Been Processed Empty The Command Queue
+            commandRecieved.clear();
+            LOGGER.info("Scheduler Request Processing Completed");
+            return true;
+        }else{
+            LOGGER.warning("Scheduler Sent An Empty Request");
         }
-        return requestSuccessful;
+        return false;
     }
 
     /***
@@ -242,6 +134,14 @@ public class Elevator implements Runnable{
     public void run() {
         while (true) {
             synchronized (systemScheduler){
+                // TO DO RECEIVE THE REQUEST FROM THE Scheduler
+                // commandRecieved = systemScheduler.requestFromScheduler();
+                if(receiveAndCheckSchedulerRequest()){
+                    // TO BE DONE ONCE THE COMMAND EXECUTION HAS BEEN SUCCESSFUL
+                    // notifyAll();
+                }else{
+                    LOGGER.warning("\nScheduler Request PROCESSING FAILED\n");
+                }
 
             }
         }
