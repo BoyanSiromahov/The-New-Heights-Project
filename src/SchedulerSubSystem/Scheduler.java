@@ -2,49 +2,46 @@
  * 
  */
 package SchedulerSubSystem;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import Util.Parser;
 
-
-public class Scheduler implements Runnable{
+public class Scheduler implements Runnable {
 	boolean elevatorRequest = false;
 	boolean elevatorArrived = false;
 	boolean elevatorBoarded = false;
 	int arrivedFloor = 0;
-	LinkedList eventQ = new LinkedList<Parser>(); 
-	
-	
+	LinkedList eventQ = new LinkedList<Parser>();
+
 	public Scheduler() {
 	}
-	
-	
+
 	public synchronized Parser getEvent() {
-		while(!elevatorRequest) {//muneeb
+		while (!elevatorRequest) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-		
+
 		notifyAll();
 		elevatorRequest = false;
-		System.out.println("Sending event to elevator:\n" + eventQ.peek());
-		return (Parser) eventQ.remove();	
+		System.out.println("Scheduler sending event to elevator:\n" + eventQ.peek());
+		return (Parser) eventQ.remove();
 	}
-	
+
 	public synchronized void elevatorArrived(int floorNum) {
-		System.out.println("Elevator arrived at floor: " + floorNum);//muneeb
 		arrivedFloor = floorNum;
 		elevatorArrived = true;
-		notifyAll();	
+		notifyAll();
 	}
-	
+
 	public synchronized int getArrivedFloor() {
-		while(!elevatorArrived) {
+		while (!elevatorArrived) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
@@ -55,21 +52,21 @@ public class Scheduler implements Runnable{
 		notifyAll();
 		return arrivedFloor;
 	}
-	
+
 	public synchronized void elevatorRequest(Parser p) {
+		System.out.println("Request recieved");
 		elevatorRequest = true;
 		eventQ.add(p);
 		notifyAll();
 	}
-	
+
 	public synchronized void elevatorBoarded() {
 		elevatorBoarded = true;
-		System.out.println("Elevator boarding underway");//muneeb
 		notifyAll();
 	}
-	
+
 	public synchronized void elevatorReady() {
-		while(!elevatorBoarded) {
+		while (!elevatorBoarded) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
@@ -77,14 +74,11 @@ public class Scheduler implements Runnable{
 			}
 		}
 		elevatorBoarded = false;
-		System.out.println("Elevator moving towards Destination Floor");	//muneeb
-	}	
+	}
 
 	@Override
 	public void run() {
-		
-		
-	}
 
+	}
 
 }
