@@ -32,7 +32,7 @@ public class Scheduler implements Runnable{
 		
 		notifyAll();
 		elevatorRequest = false;
-		System.out.println("sending event to elevator:\n" + eventQ.peek());
+		System.out.println("Sending event to elevator:\n" + eventQ.peek());
 		return (Parser) eventQ.remove();	
 	}
 	
@@ -64,7 +64,7 @@ public class Scheduler implements Runnable{
 	
 	public synchronized void elevatorBoarded() {
 		elevatorBoarded = true;
-		System.out.println("elevator leaving to dest");//muneeb
+		System.out.println("Elevator boarding underway");//muneeb
 		notifyAll();
 	}
 	
@@ -77,7 +77,7 @@ public class Scheduler implements Runnable{
 			}
 		}
 		elevatorBoarded = false;
-		System.out.println("elevator leaving to dest");	//muneeb
+		System.out.println("Elevator moving towards Destination Floor");	//muneeb
 	}	
 
 	@Override

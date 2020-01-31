@@ -54,7 +54,7 @@ public class Floor implements Runnable {
 					double millis = floorEvents.get(i).getStartTime().getTime() - 3600000*5;
 					System.out.println("Comparing: " + millis/1000 + " and " +  elapsedTime);
 					if (millis/1000 == elapsedTime) {
-						System.out.println("sending event to scheduler:\n" + floorEvents.get(i));
+						System.out.println("Sending event to scheduler:\n" + floorEvents.get(i));
 						scheduler.elevatorRequest(floorEvents.get(i));
 						floorEvents.remove(i);
 					}

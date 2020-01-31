@@ -92,13 +92,8 @@ public class Elevator implements Runnable{
     public boolean receiveAndCheckSchedulerRequest() {
             Parser temp = commandRecieved.poll();
             if (temp != null) {
-                if (temp.getStartFloor() == currentElevatorLevel && door == ElevatorDoor.OPEN &&
-                        motor == ElevatorMotor.STOP && temp.getEndFloor() >= GROUND_FLOOR &&
-                        temp.getEndFloor() < TOTAL_FLOORS)
-                {
-                    System.out.println(String.format("Elevator: %d received the request from scheduler",
+                    System.out.println(String.format("\nElevator: %d received the request from scheduler",
                             elevatorNumber));
-                    System.out.println(temp.toString());
                     elevatorFloorButtons.replace(temp.getEndFloor(), ElevatorButton.ON);
                     systemScheduler.elevatorBoarded();
                     closeElevatorDoor();
@@ -107,7 +102,6 @@ public class Elevator implements Runnable{
                     currentElevatorLevel = temp.getEndFloor();
                     return true;
                 }
-            }
             System.out.println("Invalid Request Sent By Scheduler");
             return false;
     }
