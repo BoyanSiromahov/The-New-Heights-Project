@@ -1,19 +1,14 @@
-/*
- * 
- */
 package Util;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import ElevatorSubSystem.Direction; 
+import ElevatorSubSystem.Direction;
+
 public class Parser 
 {
 	private Date startTime;
@@ -30,8 +25,9 @@ public class Parser
 	}
 
 	public static List<String[]> csvReader()
-	{ 
-		String file = "csv.txt";
+	{
+
+		String file = String.format("csv.txt");
 	    List<String[]> content = new ArrayList<>();
 	    
 	    try (BufferedReader br = new BufferedReader(new FileReader(file))) 

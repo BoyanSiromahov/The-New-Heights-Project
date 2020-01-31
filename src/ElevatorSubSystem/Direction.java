@@ -1,6 +1,3 @@
-/*
- * 
- */
 package ElevatorSubSystem;
 /**
  * This Enum class is used to Specify the requested Direction. The indicator can be used to check the direction
