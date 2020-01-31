@@ -23,7 +23,6 @@ public class ElevatorTest {
 
 	@Test
 	public void receiveAndCheckSchedulerRequest() {
-
 		assertFalse(testElevator.receiveAndCheckSchedulerRequest());
 	}
 
