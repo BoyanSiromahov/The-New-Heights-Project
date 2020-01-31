@@ -1,8 +1,8 @@
 package ElevatorSubSystem;
 
-import java.util.logging.Logger;
-import FloorSubSystem.Floor;
 import SchedulerSubSystem.Scheduler;
+import Util.Parser;
+
 import java.util.*;
 
 /**
@@ -14,7 +14,7 @@ import java.util.*;
 public class Elevator implements Runnable{
 
     private static final int DOOR_OPENING_CLOSING_DELAY  = 2;
-    private static final int ELEVATOR_MOVING_TIME  = 3;
+    private static final int ELEVATOR_MOVING_TIME  = 4;
     private static final int GROUND_FLOOR  = 1;
     private static final int TOTAL_FLOORS  = 5;
     private ElevatorMotor motor;
@@ -23,10 +23,9 @@ public class Elevator implements Runnable{
     private int currentElevatorLevel;
 
     private Scheduler systemScheduler;
-    private Queue<Floor> commandRecieved;
+    private Queue<Parser> commandRecieved;
     private HashMap<Integer, ArrivalSensor> elevatorArrivalSensor;
     private HashMap<Integer, ElevatorButton> elevatorFloorButtons;
-    private Queue<Floor> floors;
 
 
     /**
@@ -42,7 +41,6 @@ public class Elevator implements Runnable{
         this.elevatorNumber = elevatorNumber;
         commandRecieved =  new LinkedList<>();
         systemScheduler = elevatorScheduler;
-        floors = new LinkedList<>();
         initialiseDataSet();
     }
 
@@ -92,8 +90,26 @@ public class Elevator implements Runnable{
      * completed or failure happened during the processing.
      */
     public boolean receiveAndCheckSchedulerRequest() {
-
-        return false;
+            Parser temp = commandRecieved.poll();
+            if (temp != null) {
+                if (temp.getStartFloor() == currentElevatorLevel && door == ElevatorDoor.OPEN &&
+                        motor == ElevatorMotor.STOP && temp.getEndFloor() >= GROUND_FLOOR &&
+                        temp.getEndFloor() < TOTAL_FLOORS)
+                {
+                    System.out.println(String.format("Elevator: %d received the request from scheduler",
+                            elevatorNumber));
+                    System.out.println(temp.toString());
+                    elevatorFloorButtons.replace(temp.getEndFloor(), ElevatorButton.ON);
+                    systemScheduler.elevatorBoarded();
+                    closeElevatorDoor();
+                    systemScheduler.elevatorReady();
+                    elevatorDelay(ELEVATOR_MOVING_TIME);
+                    currentElevatorLevel = temp.getEndFloor();
+                    return true;
+                }
+            }
+            System.out.println("Invalid Request Sent By Scheduler");
+            return false;
     }
 
     /***
@@ -104,13 +120,13 @@ public class Elevator implements Runnable{
     public void run() {
         while (true) {
             synchronized (systemScheduler){
-                // TO DO RECEIVE THE REQUEST FROM THE Scheduler
-                // commandRecieved = systemScheduler.requestFromScheduler();
+                commandRecieved.add(systemScheduler.getEvent());
                 if(receiveAndCheckSchedulerRequest()){
-                    // TO BE DONE ONCE THE COMMAND EXECUTION HAS BEEN SUCCESSFUL
-                    // notifyAll();
+                    elevatorArrivalSensor.replace(currentElevatorLevel, ArrivalSensor.REACHED_FLOOR);
+                    systemScheduler.elevatorArrived(currentElevatorLevel);
                 }else{
-
+                    //Case if the request is invalid
+                    systemScheduler.notifyAll();
                 }
 
             }
