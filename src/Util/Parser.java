@@ -29,7 +29,7 @@ public class Parser
 
 	public static List<String[]> csvReader()
 	{ 
-		String file = "../csv.txt";
+		String file = "csv.txt";
 	    List<String[]> content = new ArrayList<>();
 	    
 	    try (BufferedReader br = new BufferedReader(new FileReader(file))) 
@@ -39,11 +39,10 @@ public class Parser
 	        {
 	            content.add(line.split(","));
 	        }
-	    } catch (FileNotFoundException e) {
-	    } catch (IOException e1) {
-			e1.printStackTrace();
+	    } catch (IOException e) {
+			e.printStackTrace();
 		}
-	    content.remove(0);  //Deletes titles.
+	    content.remove(0);  //Deletes title.
 	    return content;
 	}
 	
@@ -55,7 +54,7 @@ public class Parser
 		int number;
 		Direction direction = null;
 		
-		DateFormat standard = new SimpleDateFormat("mm:ss.SSS"); // Minutes/seconds/milliseconds
+		SimpleDateFormat standard = new SimpleDateFormat("HH:mm:ss"); // Hours/Minutes/seconds/milliseconds
 	    Date date = null;
 	    
 	    //Changing data to proper types
@@ -67,7 +66,9 @@ public class Parser
 	    		if (j==0)
 	    		{		
 	    			try {
+	    				//System.out.println("converting date: " + (String) originaList.get(i)[j]);
 						date = standard.parse((String) originaList.get(i)[j]);
+					//	System.out.println("new date: " + date);
 					} catch (ParseException e) {
 						e.printStackTrace();
 					}
@@ -125,4 +126,9 @@ public class Parser
 	public void setDirection(Direction direction) {
 		this.direction = direction;
 	}
+	
+    @Override
+    public String toString() { 
+        return "Floor Call event: Start floor, " + startFloor + " End floor, " + endFloor + " called using, " + direction + " at, " + startTime; 
+    } 	
 }
