@@ -55,7 +55,14 @@ Responsibilities
 
 1. Run TestAll.java (Runs JUnit Test for classes)
 
+    The TestAll.java is responsible for running all the JUnit Test for individual classes in the project.
+    
+    Expected Output from the successful run of the JUnit Test:
+    
+        JUnit Test: The Elevator Class successfully identifies the Invalid Request
+        
+        Invalid Request Sent By Scheduler
+
 2. Run Floor_Scheduler_ElevatorTest.java (Test Case for Communication Channel)
-
-
-
+    
+    This is used to check the running of the entire system as a single component with active threads

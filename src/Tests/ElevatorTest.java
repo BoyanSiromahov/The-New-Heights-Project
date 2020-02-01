@@ -23,6 +23,7 @@ public class ElevatorTest {
 
 	@Test
 	public void receiveAndCheckSchedulerRequest() {
+		System.out.println("\nJUnit Test: The Elevator Class successfully identifies the Invalid Request\n");
 		assertFalse(testElevator.receiveAndCheckSchedulerRequest());
 	}
 
