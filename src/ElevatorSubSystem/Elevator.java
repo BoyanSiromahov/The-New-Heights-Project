@@ -1,7 +1,7 @@
 package ElevatorSubSystem;
 
 import SchedulerSubSystem.Scheduler;
-import Util.Parser;
+import Util.CallEvent;
 
 import java.util.*;
 
@@ -25,7 +25,7 @@ public class Elevator implements Runnable {
 	private int currentElevatorLevel;
 
 	private Scheduler systemScheduler;
-	private Queue<Parser> commandRecieved;
+	private Queue<CallEvent> commandRecieved;
 	private HashMap<Integer, ArrivalSensor> elevatorArrivalSensor;
 	private HashMap<Integer, ElevatorButton> elevatorFloorButtons;
 
@@ -99,7 +99,7 @@ public class Elevator implements Runnable {
 	 *         processing.
 	 */
 	public boolean receiveAndCheckSchedulerRequest() {
-		Parser temp = commandRecieved.poll();
+		CallEvent temp = commandRecieved.poll();
 		if (temp != null) {
 			System.out.println(String.format("\nElevator %d: received request from scheduler", elevatorNumber));
 			elevatorFloorButtons.replace(temp.getEndFloor(), ElevatorButton.ON);

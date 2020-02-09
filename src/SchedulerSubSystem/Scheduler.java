@@ -11,14 +11,14 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import Util.Parser;
+import Util.CallEvent;
 
 public class Scheduler implements Runnable {
 	boolean elevatorRequest = false;
 	boolean elevatorArrived = false;
 	boolean elevatorBoarded = false;
 	int arrivedFloor = 0;
-	LinkedList eventQ = new LinkedList<Parser>();
+	LinkedList eventQ = new LinkedList<CallEvent>();
 
 	public Scheduler() {
 	}
@@ -27,7 +27,7 @@ public class Scheduler implements Runnable {
 	 * This function is used to forward the elevator request to the elevator from
 	 * the floor
 	 */
-	public synchronized Parser getEvent() {
+	public synchronized CallEvent getEvent() {
 		while (!elevatorRequest) {
 			try {
 				wait();
@@ -39,7 +39,7 @@ public class Scheduler implements Runnable {
 		notifyAll();
 		elevatorRequest = false;
 		System.out.println("Scheduler sending event to elevator:\n" + eventQ.peek());
-		return (Parser) eventQ.remove();
+		return (CallEvent) eventQ.remove();
 	}
 
 	/***
@@ -77,7 +77,7 @@ public class Scheduler implements Runnable {
 	 * 
 	 * @param p - the elevator request that is sent from the floor.
 	 */
-	public synchronized void elevatorRequest(Parser p) {
+	public synchronized void elevatorRequest(CallEvent p) {
 		System.out.println("Request recieved");
 		elevatorRequest = true;
 		eventQ.add(p);
