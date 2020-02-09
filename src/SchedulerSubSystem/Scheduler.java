@@ -2,14 +2,13 @@ package SchedulerSubSystem;
 
 /**
  * The main class for the scheduler. This class is used as an middle man to 
- * recieve and forward events from the Floor class and the Elevator class. It also
+ * receive and forward events from the Floor class and the Elevator class. It also
  * keeps track of all events hit and queues them up accordingly.
  * 
  * @author Boyan Siromahov
  */
-import java.util.ArrayList;
+
 import java.util.LinkedList;
-import java.util.List;
 
 import Util.Parser;
 
@@ -18,7 +17,7 @@ public class Scheduler implements Runnable {
 	boolean elevatorArrived = false;
 	boolean elevatorBoarded = false;
 	int arrivedFloor = 0;
-	LinkedList eventQ = new LinkedList<Parser>();
+	LinkedList<Parser> eventQ = new LinkedList<Parser>();
 
 	public Scheduler() {
 	}

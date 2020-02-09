@@ -52,9 +52,9 @@ public class Elevator implements Runnable {
 	 * Sensor for each Elevator
 	 */
 	private void initialiseDataSet() {
-		elevatorFloorButtons = new HashMap() {
+		elevatorFloorButtons = new HashMap<Integer, ElevatorButton>() {	
 		};
-		elevatorArrivalSensor = new HashMap() {
+		elevatorArrivalSensor = new HashMap<Integer, ArrivalSensor>() {
 		};
 		for (int i = GROUND_FLOOR; i < TOTAL_FLOORS; i++) {
 			elevatorFloorButtons.put(i, ElevatorButton.OFF);

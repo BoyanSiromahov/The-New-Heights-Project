@@ -7,7 +7,6 @@ import ElevatorSubSystem.Elevator;
 import FloorSubSystem.Floor;
 import SchedulerSubSystem.Scheduler;
 import Util.Parser;
-import org.junit.Test;
 
 /**
  * Main Test Case For Elevator, Scheduler and Floor communication. Please run separately than the
