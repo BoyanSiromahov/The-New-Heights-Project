@@ -3,15 +3,10 @@
  */
 package FloorSubSystem;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import ElevatorSubSystem.Direction;
 import SchedulerSubSystem.Scheduler;
 import Util.Parser;
 
@@ -23,7 +18,7 @@ import Util.Parser;
  *
  */
 public class Floor implements Runnable {
-	private LinkedList eventQ = new LinkedList<Integer>();
+	private LinkedList<Integer> eventQ = new LinkedList<Integer>();
 	private Scheduler scheduler;
 	private List<Parser> floorEvents = new ArrayList<Parser>();
 
