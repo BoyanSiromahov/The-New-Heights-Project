@@ -1,6 +1,7 @@
 package Tests;
 
 import ElevatorSubSystem.Elevator;
+import ElevatorSubSystem.State;
 import SchedulerSubSystem.Scheduler;
 import org.junit.*;
 import static org.junit.Assert.*;
@@ -23,8 +24,17 @@ public class ElevatorTest {
 
 	@Test
 	public void receiveAndCheckSchedulerRequest() {
+		System.out.println("\n[JUNIT TESTING]\n");
 		System.out.println("\nJUnit Test: The Elevator Class successfully identifies the Invalid Request\n");
 		assertFalse(testElevator.receiveAndCheckSchedulerRequest());
+	}
+
+	@Test
+	public void testGetElevatorState() {
+		assertNotNull(testElevator.getElevatorState());
+		assertNotEquals(State.ELEVATOR_MOVING, testElevator.getElevatorState());
+		assertEquals("\nElevator State Test: Idle-Waiting for request",
+				State.ELEVATOR_IDLE_WAITING_FOR_REQUEST, testElevator.getElevatorState());
 	}
 
 	@After
