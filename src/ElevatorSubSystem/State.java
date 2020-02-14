@@ -13,6 +13,8 @@ package ElevatorSubSystem;
  * passenger exiting sequence
  * ELEVATOR_IDLE_WAITING_FOR_REQUEST: State indicative of the elevator waiting for a request call after movement is complete and
  * indicating the initial state of the elevator and is also
+ *
+ * @author Muneeb Nasir
  */
 public enum State {
     ELEVATOR_MOVING,
