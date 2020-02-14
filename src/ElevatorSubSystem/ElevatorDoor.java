@@ -1,8 +1,8 @@
 package ElevatorSubSystem;
 
 /**
- * This Enum class is used to keep track of the Elevator Doors. There are only
- * two options for the Elevator Door.
+ * This enumeration class is used to keep track of the elevator doors. 
+ * ElevatorDoor objects may only be open or closed.
  * 
  * @author Muneeb Nasir
  */
