@@ -1,7 +1,7 @@
 package Tests;
 
 import ElevatorSubSystem.Elevator;
-import ElevatorSubSystem.State;
+import ElevatorSubSystem.ElevatorState;
 import SchedulerSubSystem.Scheduler;
 import org.junit.*;
 import static org.junit.Assert.*;
@@ -32,9 +32,9 @@ public class ElevatorTest {
 	@Test
 	public void testGetElevatorState() {
 		assertNotNull(testElevator.getElevatorState());
-		assertNotEquals(State.ELEVATOR_MOVING, testElevator.getElevatorState());
+		assertNotEquals(ElevatorState.ELEVATOR_MOVING, testElevator.getElevatorState());
 		assertEquals("\nElevator State Test: Idle-Waiting for request",
-				State.ELEVATOR_IDLE_WAITING_FOR_REQUEST, testElevator.getElevatorState());
+				ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST, testElevator.getElevatorState());
 	}
 
 	@After

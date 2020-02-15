@@ -13,13 +13,11 @@ import java.util.LinkedList;
 import Util.CallEvent;
 
 public class Scheduler implements Runnable {
-	boolean elevatorRequest = false;
-	boolean elevatorArrived = false;
-	boolean elevatorBoarded = false;
 	int arrivedFloor = 0;
 
-	LinkedList eventQ = new LinkedList<CallEvent>();
-
+	LinkedList<CallEvent> eventQ = new LinkedList<CallEvent>();
+	SchedulerState ss = SchedulerState.IDLE;
+	
 	public Scheduler() {
 	}
 
@@ -28,7 +26,7 @@ public class Scheduler implements Runnable {
 	 * the floor
 	 */
 	public synchronized CallEvent getEvent() {
-		while (!elevatorRequest) {
+		while (ss != SchedulerState.E_REQUESTED) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
@@ -37,7 +35,7 @@ public class Scheduler implements Runnable {
 		}
 
 		notifyAll();
-		elevatorRequest = false;
+		ss = SchedulerState.E_MOVING;
 		System.out.println("Scheduler sending event to elevator:\n" + eventQ.peek());
 		return (CallEvent) eventQ.remove();
 	}
@@ -50,7 +48,7 @@ public class Scheduler implements Runnable {
 	 */
 	public synchronized void elevatorArrived(int floorNum) {
 		arrivedFloor = floorNum;
-		elevatorArrived = true;
+		ss = SchedulerState.E_ARRIVED;
 		notifyAll();
 	}
 
@@ -59,14 +57,14 @@ public class Scheduler implements Runnable {
 	 * at
 	 */
 	public synchronized int getArrivedFloor() {
-		while (!elevatorArrived) {
+		while (ss != SchedulerState.E_ARRIVED) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-		elevatorArrived = false;
+		ss = SchedulerState.E_MOVING;
 		notifyAll();
 		return arrivedFloor;
 	}
@@ -79,7 +77,7 @@ public class Scheduler implements Runnable {
 	 */
 	public synchronized void elevatorRequest(CallEvent p) {
 		System.out.println("Request recieved");
-		elevatorRequest = true;
+		ss = SchedulerState.E_REQUESTED;
 		eventQ.add(p);
 		notifyAll();
 	}
@@ -89,7 +87,7 @@ public class Scheduler implements Runnable {
 	 * true which will then allow the elevator to move
 	 */
 	public synchronized void elevatorBoarded() {
-		elevatorBoarded = true;
+		ss = SchedulerState.E_BOARDED;
 		notifyAll();
 	}
 
@@ -98,14 +96,18 @@ public class Scheduler implements Runnable {
 	 * passengers are boarded. This is sent from floor.
 	 */
 	public synchronized void elevatorReady() {
-		while (!elevatorBoarded) {
+		while (ss != SchedulerState.E_BOARDED) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-		elevatorBoarded = false;
+		ss = SchedulerState.E_MOVING;
+	}
+	
+	public synchronized void elevatorFinished() {
+		ss = SchedulerState.IDLE;
 	}
 
 	/***
@@ -117,7 +119,6 @@ public class Scheduler implements Runnable {
 	 */
 	@Override
 	public void run() {
-
 	}
 
 }
