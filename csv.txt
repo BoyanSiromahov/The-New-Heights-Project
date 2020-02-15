@@ -1,2 +1,4 @@
 Time, 	Start Floor, End Floor, Button
 00:00:5,1,2,UP
+00:00:18,2,5,UP
+00:00:39,4,2,DOWN
