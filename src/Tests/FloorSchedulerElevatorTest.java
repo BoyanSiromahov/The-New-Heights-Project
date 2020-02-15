@@ -17,13 +17,13 @@ import org.junit.Test;
  * 
  * @author Muneeb Nasir
  */
-public class Floor_Scheduler_ElevatorTest {
+public class FloorSchedulerElevatorTest {
 
 	public static void main(String[] args) throws ParseException {
 		Thread elevatorTest, floorTest;
 		List<CallEvent> elevatorEventsTest = new ArrayList<CallEvent>();
 		Parser parserTest = new Parser();
-		elevatorEventsTest = parserTest.makeList(parserTest.csvReader());
+		elevatorEventsTest = parserTest.makeList(Parser.csvReader());
 		Scheduler schedulerTest = new Scheduler();
 
 
