@@ -1,6 +1,8 @@
 package Tests;
 
+import Util.CallEvent;
 import Util.Parser;
+
 import org.junit.*;
 import static org.junit.Assert.*;
 import java.util.ArrayList;
@@ -13,30 +15,35 @@ import java.util.List;
  */
 public class ParserTest {
 	private Parser parserTest;
-	private List<Parser> elevatorEventsTest;
+	private List<CallEvent> elevatorEventsTest;
 
 	@Before
 	public void setUp() throws Exception {
 		parserTest = new Parser();
-		elevatorEventsTest =  new ArrayList<>();
+		elevatorEventsTest =  parserTest.makeList(parserTest.csvReader());
 	}
 
 	@Test
 	public void testMakelist() {
-		elevatorEventsTest = parserTest.makeList(parserTest.csvReader());
 		assertNotNull(elevatorEventsTest);
 		assertNotEquals("", parserTest.toString());
+		for (CallEvent e: elevatorEventsTest)
+		{
+			System.out.println(e.getEndFloor());
+		}
 
 	}
 
 	@Test
 	public void getStartFloor() {
-		assertNotEquals(0, parserTest.getStartFloor());
+		assertNotEquals(0, elevatorEventsTest.get(0).getStartFloor());
+		System.out.println(elevatorEventsTest.get(0).getStartFloor());
 	}
 
 	@Test
 	public void setEndFloor() {
-		assertNotEquals(0, parserTest.getEndFloor());
+		assertNotEquals(0, elevatorEventsTest.get(0).getEndFloor());
+		System.out.println(elevatorEventsTest.get(0).getStartFloor());
 	}
 
 }

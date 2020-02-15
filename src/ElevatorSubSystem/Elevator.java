@@ -1,7 +1,7 @@
 package ElevatorSubSystem;
 
 import SchedulerSubSystem.Scheduler;
-import Util.Parser;
+import Util.CallEvent;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -18,7 +18,6 @@ import java.util.logging.Logger;
  * @author Muneeb Nasir
  */
 public class Elevator implements Runnable {
-
     private static Logger LOGGER = null;
 
     static {

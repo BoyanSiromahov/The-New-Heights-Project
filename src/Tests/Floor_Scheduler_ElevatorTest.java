@@ -6,7 +6,10 @@ import java.util.List;
 import ElevatorSubSystem.Elevator;
 import FloorSubSystem.Floor;
 import SchedulerSubSystem.Scheduler;
+import Util.CallEvent;
 import Util.Parser;
+import org.junit.Test;
+
 
 /**
  * Main Test Case For Elevator, Scheduler and Floor communication. Please run separately than the
@@ -18,7 +21,7 @@ public class Floor_Scheduler_ElevatorTest {
 
 	public static void main(String[] args) throws ParseException {
 		Thread elevatorTest, floorTest;
-		List<Parser> elevatorEventsTest = new ArrayList<Parser>();
+		List<CallEvent> elevatorEventsTest = new ArrayList<CallEvent>();
 		Parser parserTest = new Parser();
 		elevatorEventsTest = parserTest.makeList(parserTest.csvReader());
 		Scheduler schedulerTest = new Scheduler();

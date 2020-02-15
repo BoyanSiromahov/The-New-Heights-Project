@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import SchedulerSubSystem.Scheduler;
-import Util.Parser;
+import Util.CallEvent;
 
 /**
  * This class represents the floor subsystem. It is in charge of tracking time and send events. 
@@ -20,7 +20,7 @@ import Util.Parser;
 public class Floor implements Runnable {
 	private LinkedList<Integer> eventQ = new LinkedList<Integer>();
 	private Scheduler scheduler;
-	private List<Parser> floorEvents = new ArrayList<Parser>();
+	private List<CallEvent> floorEvents = new ArrayList<CallEvent>();
 
 	/**
 	 * The Floor object constructor. A Parser object is created that processes a CSV
@@ -29,7 +29,7 @@ public class Floor implements Runnable {
 	 * @param scheduler
 	 * @param floorEvents
 	 */
-	public Floor(Scheduler scheduler, List<Parser> floorEvents) {
+	public Floor(Scheduler scheduler, List<CallEvent> floorEvents) {
 		this.scheduler = scheduler;
 		this.floorEvents = floorEvents;
 	}
