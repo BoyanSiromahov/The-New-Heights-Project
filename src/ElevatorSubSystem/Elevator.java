@@ -2,11 +2,9 @@ package ElevatorSubSystem;
 
 import SchedulerSubSystem.Scheduler;
 import Util.CallEvent;
-
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -36,7 +34,7 @@ public class Elevator implements Runnable {
     private int elevatorElapsedTime;
     private State elevatorState;
     private Scheduler systemScheduler;
-    private Queue<Parser> commandRecieved;
+    private Queue<CallEvent> commandReceived;
     private HashMap<Integer, Direction> floorsProcessingDelayed;
     private HashMap<Integer, ArrivalSensor> elevatorArrivalSensor;
     private HashMap<Integer, ElevatorButton> elevatorFloorButtons;
@@ -55,7 +53,7 @@ public class Elevator implements Runnable {
         motor = ElevatorMotor.STOP;
         elevatorState = State.ELEVATOR_IDLE_WAITING_FOR_REQUEST;
         this.elevatorNumber = elevatorNumber;
-        commandRecieved = new LinkedList<>();
+        commandReceived = new LinkedList<>();
         systemScheduler = elevatorScheduler;
         initialiseDataSet();
     }
@@ -248,9 +246,9 @@ public class Elevator implements Runnable {
         DecimalFormat formatter = new DecimalFormat("00"); //This is used to keep track of the Time Format
         SimpleDateFormat timeFormatter = new SimpleDateFormat("ss");
         //Retrieve All Commands Sent From the Scheduler
-        while (!commandRecieved.isEmpty()) {
+        while (!commandReceived.isEmpty()) {
             // Gets the sent Floor Request associated with the Selected Elevator from the Scheduler
-            Parser systemSchedulerCommand = commandRecieved.poll();
+            CallEvent systemSchedulerCommand = commandReceived.poll();
 
             if (systemSchedulerCommand != null) {
                 elevatorElapsedTime = Integer.parseInt(timeFormatter.format(systemSchedulerCommand.getStartTime()));
@@ -315,7 +313,7 @@ public class Elevator implements Runnable {
      * @return True, when the request has been valid. False, when the request is invalid
      */
     public boolean checkSchedulerRequest() {
-        Parser temp = commandRecieved.poll();
+        CallEvent temp = commandReceived.poll();
         if (temp != null) {
             System.out.println(String.format("\nElevator %d: received request from scheduler", elevatorNumber));
             elevatorFloorButtons.replace(temp.getEndFloor(), ElevatorButton.ON);
@@ -342,7 +340,7 @@ public class Elevator implements Runnable {
     public void run() {
         while (true) {
             synchronized (systemScheduler) {
-                commandRecieved.add(systemScheduler.getEvent());
+                commandReceived.add(systemScheduler.getEvent());
                 if (receiveAndCheckSchedulerRequest()) {
                     systemScheduler.elevatorArrived(currentElevatorLevel);
                 } else {

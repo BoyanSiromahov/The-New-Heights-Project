@@ -27,23 +27,17 @@ public class ParserTest {
 	public void testMakelist() {
 		assertNotNull(elevatorEventsTest);
 		assertNotEquals("", parserTest.toString());
-		for (CallEvent e: elevatorEventsTest)
-		{
-			System.out.println(e.getEndFloor());
-		}
 
 	}
 
 	@Test
 	public void getStartFloor() {
 		assertNotEquals(0, elevatorEventsTest.get(0).getStartFloor());
-		System.out.println(elevatorEventsTest.get(0).getStartFloor());
 	}
 
 	@Test
 	public void setEndFloor() {
 		assertNotEquals(0, elevatorEventsTest.get(0).getEndFloor());
-		System.out.println(elevatorEventsTest.get(0).getStartFloor());
 	}
 
 }
