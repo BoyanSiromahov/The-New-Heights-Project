@@ -64,8 +64,10 @@ public class Elevator implements Runnable {
      */
     private void initialiseDataSet() {
         elevatorFloorButtons = new HashMap<Integer, ElevatorButton>() {
+			private static final long serialVersionUID = 1L;
         };
         elevatorArrivalSensor = new HashMap<Integer, ArrivalSensor>() {
+			private static final long serialVersionUID = 1L;
         };
         for (int i = GROUND_FLOOR; i < TOTAL_FLOORS; i++) {
             elevatorFloorButtons.put(i, ElevatorButton.OFF);

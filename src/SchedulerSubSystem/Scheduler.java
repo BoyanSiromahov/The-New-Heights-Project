@@ -18,8 +18,7 @@ public class Scheduler implements Runnable {
 	LinkedList<CallEvent> eventQ = new LinkedList<CallEvent>();
 	SchedulerState ss = SchedulerState.IDLE;
 	
-	public Scheduler() {
-	}
+	
 
 	/***
 	 * This function is used to forward the elevator request to the elevator from
