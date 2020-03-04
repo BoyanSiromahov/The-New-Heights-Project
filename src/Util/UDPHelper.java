@@ -2,17 +2,18 @@ package Util;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.Arrays;
 
 public class UDPHelper {
 	
 
 	private DatagramSocket socket;
 	private DatagramPacket sendPacket, receivePacket;
+	private int portNumber;
 	private byte[] data;
 	
 	public UDPHelper(int portNumber) {
 		// Construct DatagramSocket and bind it to portNumber
+		this.portNumber = portNumber;
 		try {
 			socket = new DatagramSocket(portNumber);
 		} catch (SocketException se) {
@@ -23,7 +24,7 @@ public class UDPHelper {
 		}	
 	}
 
-	public void sendAndReceive(byte[] message, int destinationPort) {
+	public void send(byte[] message, int destinationPort) {
 		
 		// Construct DataPacket to send message
 		try {
@@ -35,13 +36,14 @@ public class UDPHelper {
 		}
 				
 		// Print packet information
-		System.out.println("Port " + socket.getPort() + ": sending packet");
+		System.out.println("Port " + portNumber + ": sending packet");
 		System.out.println("To host: " + sendPacket.getAddress());
 		System.out.println("Destination host port: " + sendPacket.getPort());
-		System.out.println("Data as string: ");
-		System.out.println(new String(sendPacket.getData(), 0, sendPacket.getLength()));
-		System.out.println("Data in bytes: ");
-		System.out.println(Arrays.toString(data));
+		System.out.print("Data as string: ");
+		System.out.println(bytesToString(message));
+		System.out.print("Data in bytes: ");
+		printBytes(message);
+		System.out.println();
 				
 		// Send the DatagramPacket 
 		try {
@@ -52,7 +54,9 @@ public class UDPHelper {
 			System.exit(1);
 		}
 		System.out.println("Packet sent.\n");
-			
+	}
+	
+	public byte[] receive() {
 		
 		// Construct DatagramPacket to receive data
 		data = new byte[100];
@@ -70,13 +74,53 @@ public class UDPHelper {
 		}
 		 	
 		// Process the received DataPacket
-		System.out.println("Port " + socket.getPort() + ": packet received");
+		System.out.println("Port " + portNumber + ": packet received");
 		System.out.println("From host: " + receivePacket.getAddress());
 		System.out.println("Host port: " + receivePacket.getPort());
-		System.out.println("Data as string: ");
-		System.out.println(new String(receivePacket.getData(), 0, receivePacket.getLength()));
-		System.out.println("Data in bytes: ");
-		System.out.println(Arrays.toString(receivePacket.getData()));
+		System.out.print("Data as string: ");
+		System.out.println(bytesToString(data));
+		System.out.print("Data in bytes: ");
+		printBytes(data);
+		System.out.println();
+		
+		return data;
+	}
+	
+	/*
+	 * Parses the byte array so that it can show the first two bits (01, 02 or 03)
+	 * then formats a new string based off of the other bits.
+	 */
+	private static String bytesToString(byte[] b) {
+		String s = "";
+		s += new String(b, 0, b.length);
+		return s;
+	}
+
+	/*
+	 * Helper method to print arrays of bytes.
+	 * Caps long strings to 80chars to make 100 byte arrays easier to read.
+	 */
+	private static void printBytes(byte[] bytes) {
+		String s = "";
+		if (bytes.length <= 5) {
+			for (int i = 0; i < bytes.length - 1; i++) {
+				s += bytes[i] + ", ";
+			}
+			System.out.println( s);
+			return;
+		}
+		for (int i = 0; i < bytes.length - 1; i++) {
+			if (bytes[1] == 4) {
+				s += bytes[0] + ", " + bytes[1] + ", " + bytes[2] + ", " + bytes[3];
+				System.out.println( s);
+				return;
+			}
+			if (bytes[i] == 0 && bytes[i + 1] == 0) {
+				break;
+			}
+			s += bytes[i] + ", ";
+		}
+		System.out.println(s);
 	}
 	
 }

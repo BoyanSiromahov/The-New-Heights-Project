@@ -14,7 +14,7 @@ import Util.Parser;
 
 /**
  * The Class Main.
- */
+ 
 public class Main {
 	public static void main(String[] args) throws ParseException 
 	{
@@ -35,3 +35,4 @@ public class Main {
 		floor.start();
 	}
 }
+*/

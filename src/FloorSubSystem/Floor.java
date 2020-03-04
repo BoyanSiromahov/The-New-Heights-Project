@@ -6,12 +6,15 @@ package FloorSubSystem;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 
 import SchedulerSubSystem.Scheduler;
 import Util.CallEvent;
+import Util.Parser;
 import Util.UDPHelper;
 
 /**
@@ -22,13 +25,13 @@ import Util.UDPHelper;
  *
  */
 public class Floor implements Runnable {
-	private LinkedList<Integer> eventQ;
-	private Scheduler scheduler;
-	private List<CallEvent> floorEvents;
 	
+	private LinkedList<Integer> eventQ;
+	private List<CallEvent> floorEvents;
 	private UDPHelper floorHelper;
-	public static final int floorPort = 30;
-	private byte[] sendData;
+	
+	public static final int FLOOR_PORT = 33;
+	
 
 	/**
 	 * The Floor object constructor. A Parser object is created that processes a CSV
@@ -37,11 +40,10 @@ public class Floor implements Runnable {
 	 * @param scheduler
 	 * @param floorEvents
 	 */
-	public Floor(Scheduler scheduler, List<CallEvent> floorEvents) {
+	public Floor(List<CallEvent> floorEvents) {
 		this.eventQ = new LinkedList<Integer>();
-		this.scheduler = scheduler;
 		this.floorEvents = floorEvents;
-		this.floorHelper = new UDPHelper(floorPort);
+		this.floorHelper = new UDPHelper(FLOOR_PORT);
 	}
 	
 	/**
@@ -50,26 +52,31 @@ public class Floor implements Runnable {
 	 * 
 	 * @param floorEvent
 	 */
-	private void createMessage(CallEvent floorEvent) {
+	private byte[] createMessage(CallEvent floorEvent) {
+		
+		byte[] sendData;
 		
 		// Prepare byte array of data to send
 		try {
 			ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-			ObjectOutputStream out = new ObjectOutputStream(byteStream);
+			
 			
 			// Convert floor event to bytes
-			out.writeObject(floorEvent);
-			out.flush();
+			byteStream.write(floorEvent.toString().getBytes());
 			
 			// Create byte array
 			sendData = byteStream.toByteArray();
 			byteStream.close();
+			
+			return sendData;
 		
 		} catch (IOException e) {
 			System.out.println("Floor error: ");
 			e.printStackTrace();
 			System.exit(1);
 		}
+		
+		return null;
 	}
 
 	
@@ -90,10 +97,11 @@ public class Floor implements Runnable {
 					double millis = floorEvents.get(i).getStartTime().getTime() - 3600000 * 5;
 					// System.out.println("Comparing: " + millis/1000 + " and " + elapsedTime);
 					if (millis / 1000 == elapsedTime) { //when time listed in the csv is the same as elapsed sent event
+						
 						System.out.println("Floor sending event to scheduler:\n" + floorEvents.get(i));
-						createMessage(floorEvents.get(i));
-						floorHelper.sendAndReceive(sendData, Scheduler.schedulerPort);
-						//scheduler.elevatorRequest(floorEvents.get(i));
+						floorHelper.send(createMessage(floorEvents.get(i)), Scheduler.SCHEDULER_PORT);
+						floorHelper.receive();
+						// TODO error handling for received data
 						floorEvents.remove(i); //remove event from queue
 					}
 				}
@@ -103,8 +111,10 @@ public class Floor implements Runnable {
 					e.printStackTrace();
 				}
 			}
+		}
+	}
 			
-			//used to notify when people have boarded the elevator
+			/* used to notify when people have boarded the elevator
 			if (eventQ.size() > 0 && (Integer) eventQ.peek() == scheduler.getArrivedFloor()) {
 				try {
 					Thread.sleep(2300);//sleep for the number of s it takes to board
@@ -115,10 +125,21 @@ public class Floor implements Runnable {
 				System.out.println("Elevator arrived, people have boarded");
 				eventQ.pop();
 				scheduler.elevatorBoarded();
-			}
+			} */
 
+		
+		
+		public static void main(String[] args) throws ParseException {
+			
+			Parser parser = new Parser();
+			List<CallEvent> elevatorEvents = new ArrayList<CallEvent>();
+			List<String[]> csvData = new ArrayList<String[]>();
+			csvData = Parser.csvReader();
+			elevatorEvents = parser.makeList(csvData);
+			
+			Thread floor;
+			floor = new Thread(new Floor(elevatorEvents));
+			floor.start();
 		}
-
-	}
 
 }
