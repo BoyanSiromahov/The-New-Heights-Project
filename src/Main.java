@@ -25,7 +25,6 @@ public class Main {
 		
 		elevatorEvents = parser.makeList(csvData);
 		
-		
 		Thread elevatorA;
 		Thread floor;
 		Scheduler ss = new Scheduler();

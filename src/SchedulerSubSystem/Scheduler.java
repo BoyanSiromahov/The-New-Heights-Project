@@ -13,8 +13,9 @@ import java.util.LinkedList;
 import Util.CallEvent;
 
 public class Scheduler implements Runnable {
-	int arrivedFloor = 0;
-
+	
+	private int arrivedFloor = 0;
+	public static final int schedulerPort = 30;
 	LinkedList<CallEvent> eventQ = new LinkedList<CallEvent>();
 	SchedulerState ss = SchedulerState.IDLE;
 	

@@ -18,7 +18,7 @@ import ElevatorSubSystem.Direction;
 public class Parser 
 {
 
-
+	
 	/**
 	 * The function reads in the input data and processes it into a List to be sent
 	 * to the Floor Class
