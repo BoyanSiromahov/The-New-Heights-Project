@@ -16,6 +16,7 @@ import Util.Parser;
  * 
  * @author Muneeb Nasir
  */
+/*
 public class FloorSchedulerElevatorTest {
 
 	public static void main(String[] args) throws ParseException {
@@ -33,3 +34,4 @@ public class FloorSchedulerElevatorTest {
 	}
 
 }
+*/

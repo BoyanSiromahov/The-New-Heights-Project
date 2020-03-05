@@ -43,8 +43,8 @@ public class Scheduler {
 				e.printStackTrace();
 			}
 		}
-
 		notifyAll();
+		
 		ss = SchedulerState.E_MOVING;
 		//System.out.println("Scheduler sending event to elevator:\n" + eventQ.peek());
 		return (CallEvent) eventQ.remove(0);
@@ -88,6 +88,7 @@ public class Scheduler {
 	public synchronized void elevatorRequest() {
 		CallEvent c = eventHandler.receiveFloorRequest();
 		eventQ.add(c);
+		eventHandler.sendElevatorRequest(c);
 		
 		ss = SchedulerState.E_REQUESTED;
 	} 

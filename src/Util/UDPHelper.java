@@ -108,7 +108,7 @@ public class UDPHelper {
 	 * 
 	 * @param floorEvent
 	 */
-	public byte[] createFloorEventMessage(CallEvent floorEvent) {
+	public byte[] createMessage(CallEvent floorEvent) {
 		
 		byte[] sendData;
 		

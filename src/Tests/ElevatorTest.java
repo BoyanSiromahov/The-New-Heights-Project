@@ -11,6 +11,7 @@ import static org.junit.Assert.*;
  * 
  * @author Muneeb Nasir
  */
+/*
 public class ElevatorTest {
 
 	private Elevator testElevator;
@@ -43,3 +44,4 @@ public class ElevatorTest {
 		testElevatorScheduler = null;
 	}
 }
+*/

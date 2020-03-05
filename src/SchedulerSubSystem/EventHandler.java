@@ -9,10 +9,10 @@ import Util.UDPHelper;
 
 public class EventHandler {
 	
-	public static final int FLOOR_PORT = 33;
-	public static final int FLOOR_SCHEDULER_PORT = 29;
-	public static final int ELEVATOR_SCHEDULER_PORT = 30;
-	public static final int ELEVATOR_PORT = 22; 
+	private static final int FLOOR_PORT = 33;
+	private static final int FLOOR_SCHEDULER_PORT = 29;
+	private static final int ELEVATOR_SCHEDULER_PORT = 30;
+	private static final int ELEVATOR_PORT = 22; 
 	
 	private Scheduler scheduler;
 	private UDPHelper floorScheduler, elevatorScheduler;
@@ -20,7 +20,7 @@ public class EventHandler {
 	private Parser p;
 	
 	public EventHandler(Scheduler s, List<CallEvent> list) {
-		this.scheduler = s;
+		scheduler = s;
 		this.list = list;
 		
 		// UDPHelper to send/receive from floor
@@ -42,6 +42,10 @@ public class EventHandler {
 		}
 		
 		return c;
+	}
+	
+	public void sendElevatorRequest(CallEvent c) {
+		elevatorScheduler.send(elevatorScheduler.createMessage(c), ELEVATOR_PORT);
 	}
 	
 	

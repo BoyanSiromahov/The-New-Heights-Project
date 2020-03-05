@@ -24,8 +24,8 @@ public class Floor {
 	private List<CallEvent> floorEvents;
 	private UDPHelper floorHelper;
 
-	public static final int FLOOR_PORT = 33;
-	public static final int FLOOR_SCHEDULER_PORT = 29;
+	private static final int FLOOR_PORT = 33;
+	private static final int FLOOR_SCHEDULER_PORT = 29;
 
 	/**
 	 * The Floor object constructor. A Parser object is created that processes a CSV
@@ -60,7 +60,7 @@ public class Floor {
 
 						System.out.println("Floor sending event to scheduler:\n" + floorEvents.get(i));
 						// Send floor event to scheduler
-						floorHelper.send(floorHelper.createFloorEventMessage(floorEvents.get(i)), FLOOR_SCHEDULER_PORT);
+						floorHelper.send(floorHelper.createMessage(floorEvents.get(i)), FLOOR_SCHEDULER_PORT);
 						// Receive reply from scheduler
 						floorHelper.decodeMessage(floorHelper.receive());
 						// TODO error handling for received data
