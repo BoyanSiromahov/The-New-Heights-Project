@@ -1,7 +1,6 @@
 package SchedulerSubSystem;
 
 
-import java.text.ParseException;
 import java.util.Collections;
 
 /**
@@ -15,29 +14,21 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import Util.ByteArray;
 import Util.CallEvent;
-import Util.UDPHelper;
 
-public class Scheduler{
+public class Scheduler {
 	
-	public static final int SCHEDULER_PORT = 30;
 	
 	private int arrivedFloor;
 	private List<CallEvent> eventQ;
-	private SchedulerState ss;
-	private UDPHelper schedulerUDPHelper;
 	private EventHandler eventHandler;
-	private ByteArray byteArray;
+	private SchedulerState ss;
 	
 	public Scheduler() {
 		arrivedFloor = 0;
 		eventQ = Collections.synchronizedList(new LinkedList<CallEvent>());
-		eventHandler = new EventHandler(eventQ);
+		eventHandler = new EventHandler(this, eventQ);
 		ss = SchedulerState.IDLE;
-		schedulerUDPHelper = new UDPHelper(SCHEDULER_PORT);
-		byteArray = new ByteArray();
-		eventHandler.run();
 	}
 
 	/***
@@ -95,11 +86,9 @@ public class Scheduler{
 	 * @param p - the elevator request that is sent from the floor.
 	 */
 	public synchronized void elevatorRequest() {
-		//CallEvent c = byteArray.decodeMessage(schedulerHelper.receive());
-		//eventQ.add(c);
-		System.out.println("QWEQWE ");
-		byte msg[] = new byte[] {1};
-		schedulerUDPHelper.send(msg, 33);
+		CallEvent c = eventHandler.receiveFloorRequest();
+		eventQ.add(c);
+		
 		ss = SchedulerState.E_REQUESTED;
 	} 
 	
@@ -132,9 +121,10 @@ public class Scheduler{
 	}
 
 	
-	public static void main(String[] args) throws ParseException 
+	public static void main(String[] args)
 	{
 		Scheduler s = new Scheduler();
+		s.elevatorRequest();
 		
 	}
 

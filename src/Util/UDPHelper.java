@@ -1,5 +1,6 @@
 package Util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.*;
 
@@ -77,9 +78,10 @@ public class UDPHelper {
 	}
 	
 	/**
+	 * Helper method to assist printing DatagramPacket information to the console.
 	 * 
-	 * @param packet
-	 * @param dataReceived
+	 * @param packet, The DatagramPacket containing the data to print.
+	 * @param dataReceived, Indicator of an incoming (true) or outgoing (false) DatagramPacket.
 	 */
 	private void printUDPData(DatagramPacket packet, boolean dataReceived) {
 		if (dataReceived) { // Print statements for received DatagramPacket
@@ -94,9 +96,122 @@ public class UDPHelper {
 		}
 		
 		System.out.print("Data as string: ");
-		System.out.println(ByteArray.bytesToString(packet.getData()));
+		System.out.println(bytesToString(packet.getData()));
 		System.out.print("Data in bytes: ");
-		ByteArray.printBytes(packet.getData());
+		printBytes(packet.getData());
 		System.out.println();
 	}
+	
+	/**
+	 * Function to convert CallEvent objects to byte array messages for
+	 * use in constructing DatagramPackets.
+	 * 
+	 * @param floorEvent
+	 */
+	public byte[] createFloorEventMessage(CallEvent floorEvent) {
+		
+		byte[] sendData;
+		
+		// Prepare byte array of data to send
+		try {
+			ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+			
+			
+			// Convert floor event to bytes
+			byteStream.write(floorEvent.toString().getBytes());
+			
+			// Create byte array
+			sendData = byteStream.toByteArray();
+			byteStream.close();
+			
+			return sendData;
+		
+		} catch (IOException e) {
+			System.out.println("Create Message Error: ");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+	public byte[] createReply() throws IOException {
+		byte[] reply;
+		String msg = "Received";
+		try {
+			ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+			
+			byteStream.write(msg.getBytes());
+			byteStream.close();
+			reply = byteStream.toByteArray();
+			return reply;
+		} catch (IOException e) {
+			System.out.println("createReply() error:");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		return null;
+	}
+	
+	/**
+	 * Private method to decode byte array received in DatagramPacket to
+	 * a CallEvent object.
+	 * 
+	 * @param message
+	 * @return CallEvent
+	 */
+	public synchronized String decodeMessage(byte[] message) {
+		return bytesToString(message);
+	
+	}
+	
+
+	/**
+	 * Parses the byte array so that it can show the first two bits (01, 02 or 03)
+	 * then formats a new string based off of the other bits.
+	 * 
+	 * @param b
+	 * @return
+	 */
+	public static String bytesToString(byte[] b) {
+		String s = "";
+		s += new String(b, 0, b.length);
+		return s;
+	}
+	
+	/**
+	 * Helper method to print arrays of bytes.
+	 * Caps long strings to 80chars to make 100 byte arrays easier to read.
+	 * 
+	 * @param bytes
+	 */
+	public static void printBytes(byte[] bytes) {
+		String s = "";
+		if (bytes.length <= 5) {
+			for (int i = 0; i < bytes.length - 1; i++) {
+				s += bytes[i] + ", ";
+			}
+			System.out.println( s);
+			return;
+		}
+		for (int i = 0; i < bytes.length - 1; i++) {
+			if (bytes[1] == 4) {
+				s += bytes[0] + ", " + bytes[1] + ", " + bytes[2] + ", " + bytes[3];
+				System.out.println( s);
+				return;
+			}
+			if (bytes[i] == 0 && bytes[i + 1] == 0) {
+				break;
+			}
+			s += bytes[i] + ", ";
+		}
+		System.out.println(s);
+	}
+
+	
 }

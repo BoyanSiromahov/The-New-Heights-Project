@@ -85,9 +85,11 @@ public class Parser
 	}
 
 	/**
+	 * Parses byte array data received in a DatagramPacket to construct a CallEvent object.
 	 * 
-	 * @param b, byte array //TODO
-	 * @return CallEvent
+	 * @param b, The byte array message to decode.
+	 * @return CallEvent, The Parser object that is populated from the input data.
+	 * @throws ParseException 
 	 */
 	public CallEvent parseByteEvent(byte[] b) {
 		
@@ -105,16 +107,17 @@ public class Parser
 		// Parse string with delimiter
 		Scanner scanner = new Scanner(s);
 		scanner.useDelimiter(",");
-		try { 
-			
-			date = standard.parse(scanner.next());
-
+	
+		try {
+			// Find next string matching HH:mm:ss to create Date object
+			date = standard.parse((String) scanner.findInLine("[0-9]{2}:[0-9]{2}:[0-9]{2}"));
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
-		startFloor = scanner.nextInt();
-		endFloor = scanner.nextInt();
-		direction = Direction.valueOf(scanner.next());
+		scanner.next();
+		startFloor = Integer.parseInt(scanner.next());
+		endFloor = Integer.parseInt(scanner.next());
+		direction = Direction.valueOf(scanner.next().trim());
 		scanner.close();
 		
 		tempParser = new CallEvent(date, startFloor, endFloor, direction);

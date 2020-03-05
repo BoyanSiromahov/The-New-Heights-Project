@@ -1,18 +1,12 @@
-/*
- * 
- */
+
 package FloorSubSystem;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import SchedulerSubSystem.Scheduler;
-import Util.ByteArray;
 import Util.CallEvent;
 import Util.Parser;
 import Util.UDPHelper;
@@ -29,10 +23,9 @@ public class Floor {
 	private LinkedList<Integer> eventQ;
 	private List<CallEvent> floorEvents;
 	private UDPHelper floorHelper;
-	private ByteArray byteArray;
 
 	public static final int FLOOR_PORT = 33;
-	public static final int SCHEDULER_PORT = 29;
+	public static final int FLOOR_SCHEDULER_PORT = 29;
 
 	/**
 	 * The Floor object constructor. A Parser object is created that processes a CSV
@@ -45,7 +38,6 @@ public class Floor {
 		this.eventQ = new LinkedList<Integer>();
 		this.floorEvents = floorEvents;
 		this.floorHelper = new UDPHelper(FLOOR_PORT);
-		this.byteArray = new ByteArray();
 	}
 
 	/***
@@ -68,9 +60,9 @@ public class Floor {
 
 						System.out.println("Floor sending event to scheduler:\n" + floorEvents.get(i));
 						// Send floor event to scheduler
-						floorHelper.send(byteArray.createMessage(floorEvents.get(i)), Scheduler.SCHEDULER_PORT);
+						floorHelper.send(floorHelper.createFloorEventMessage(floorEvents.get(i)), FLOOR_SCHEDULER_PORT);
 						// Receive reply from scheduler
-						byteArray.decodeMessage(floorHelper.receive());
+						floorHelper.decodeMessage(floorHelper.receive());
 						// TODO error handling for received data
 						
 						floorEvents.remove(i); // remove event from queue
