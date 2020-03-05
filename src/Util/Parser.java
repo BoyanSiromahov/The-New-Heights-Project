@@ -83,5 +83,15 @@ public class Parser
 		return newList;
 	}
 
+	public void parseByteEvent(byte[] b) {
+		
+		//String s = "" + (b[0] & 0xff + b[1] & 0xff);
+		
+		String s = new String(b, 0, b.length);
+		System.out.println("QWE recieved: " + s );
+		
+		
+	}
+
 
 }

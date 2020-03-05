@@ -40,7 +40,7 @@ public class UDPHelper {
 		System.out.println("To host: " + sendPacket.getAddress());
 		System.out.println("Destination host port: " + sendPacket.getPort());
 		System.out.print("Data as string: ");
-		System.out.println(bytesToString(message));
+		printBytes(message);
 		System.out.print("Data in bytes: ");
 		printBytes(message);
 		System.out.println();

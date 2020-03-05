@@ -19,10 +19,11 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import Util.ByteArray;
 import Util.CallEvent;
 import Util.UDPHelper;
 
-public class Scheduler implements Runnable {
+public class Scheduler{
 	
 	public static final int SCHEDULER_PORT = 30;
 	
@@ -30,12 +31,14 @@ public class Scheduler implements Runnable {
 	private List<CallEvent> eventQ;
 	private SchedulerState ss;
 	private UDPHelper schedulerHelper;
+	private ByteArray byteArray;
 	
 	public Scheduler() {
-		arrivedFloor = 0;
-		eventQ = Collections.synchronizedList(new LinkedList<CallEvent>());
-		ss = SchedulerState.IDLE;
-		schedulerHelper = new UDPHelper(SCHEDULER_PORT);
+		this.arrivedFloor = 0;
+		this.eventQ = Collections.synchronizedList(new LinkedList<CallEvent>());
+		this.ss = SchedulerState.IDLE;
+		this.schedulerHelper = new UDPHelper(SCHEDULER_PORT);
+		this.byteArray = new ByteArray();
 		
 	}
 
@@ -94,43 +97,14 @@ public class Scheduler implements Runnable {
 	 * @param p - the elevator request that is sent from the floor.
 	 */
 	public synchronized void elevatorRequest() {
-		eventQ.add(decodeMessage(schedulerHelper.receive()));
+		//CallEvent c = byteArray.decodeMessage(schedulerHelper.receive());
+		//eventQ.add(c);
+		System.out.println("QWEQWE ");
+		byte msg[] = new byte[] {1};
+		schedulerHelper.send(msg, 33);
 		ss = SchedulerState.E_REQUESTED;
-		notifyAll();
-	}
+	} 
 	
-	/**
-	 * Private method to decode byte array received in DatagramPacket to
-	 * a CallEvent object.
-	 * 
-	 * @param message
-	 * @return CallEvent
-	 */
-	private synchronized CallEvent decodeMessage(byte[] message) {
-		CallEvent event;
-		// Prepare byte array of data to send
-		try {
-			ByteArrayInputStream byteStream = new ByteArrayInputStream(message);
-			ObjectInputStream in = new ObjectInputStream(byteStream);
-			
-			// Convert byte array to CallEvent object
-			try {
-				event = (CallEvent) in.readObject();
-				if (in != null) in.close();
-				return event;
-			} catch (ClassNotFoundException e) {
-				System.out.println("Scheduler error: ");
-				e.printStackTrace();
-				System.exit(1);
-			}
-		
-		} catch (IOException e) {
-			System.out.println("Scheduler error: ");
-			e.printStackTrace();
-			System.exit(1);
-		}
-		return null;
-	}
 
 	/***
 	 * This function is used to notify the scheduler to flip the boarded flag to
@@ -138,7 +112,6 @@ public class Scheduler implements Runnable {
 	 */
 	public synchronized void elevatorBoarded() {
 		ss = SchedulerState.E_BOARDED;
-		notifyAll();
 	}
 
 	/***
@@ -160,27 +133,12 @@ public class Scheduler implements Runnable {
 		ss = SchedulerState.IDLE;
 	}
 
-	/***
-	 * This is the main method that is implemented from the Runnable interface. This
-	 * method ensure that only one scheduler thread can process the request and
-	 * respond accordingly. (Ensure The Operation is Atomic)
-	 * 
-	 * Currently not in use, will be used in later iterations.
-	 */
-	@Override
-	public void run() {
-		while(true) {
-			// Receive floor request
-			elevatorRequest();
-		}
-	}
 	
 	public static void main(String[] args) throws ParseException 
 	{
 		Scheduler test = new Scheduler();
-		test.run();
+		
+		//test.run();
 	}
-	
-	
 
 }
