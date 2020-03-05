@@ -26,10 +26,10 @@ public class FloorSchedulerElevatorTest {
 		Scheduler schedulerTest = new Scheduler();
 
 
-		floorTest = new Thread(new Floor (elevatorEventsTest));
+		//floorTest = new Thread(new Floor (elevatorEventsTest));
 		elevatorTest = new Thread(new Elevator(1, schedulerTest), "Elevator");
 		elevatorTest.start();
-		floorTest.start();
+		//floorTest.start();
 	}
 
 }

@@ -3,6 +3,11 @@ package Util;
 import java.io.IOException;
 import java.net.*;
 
+/**
+ * 
+ * @author Samantha Tripp
+ *
+ */
 public class UDPHelper {
 	
 
@@ -21,7 +26,7 @@ public class UDPHelper {
 			System.out.println("Error creating DatagramSocket:");
 			se.printStackTrace();
 			System.exit(1);
-		}	
+		}
 	}
 
 	public void send(byte[] message, int destinationPort) {
@@ -36,14 +41,8 @@ public class UDPHelper {
 		}
 				
 		// Print packet information
-		System.out.println("Port " + portNumber + ": sending packet");
-		System.out.println("To host: " + sendPacket.getAddress());
-		System.out.println("Destination host port: " + sendPacket.getPort());
-		System.out.print("Data as string: ");
-		printBytes(message);
-		System.out.print("Data in bytes: ");
-		printBytes(message);
-		System.out.println();
+		printUDPData(sendPacket, false);
+		
 				
 		// Send the DatagramPacket 
 		try {
@@ -72,55 +71,32 @@ public class UDPHelper {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		 	
 		// Process the received DataPacket
-		System.out.println("Port " + portNumber + ": packet received");
-		System.out.println("From host: " + receivePacket.getAddress());
-		System.out.println("Host port: " + receivePacket.getPort());
-		System.out.print("Data as string: ");
-		System.out.println(bytesToString(data));
-		System.out.print("Data in bytes: ");
-		printBytes(data);
-		System.out.println();
-		
+		printUDPData(receivePacket, true);
 		return data;
 	}
 	
-	/*
-	 * Parses the byte array so that it can show the first two bits (01, 02 or 03)
-	 * then formats a new string based off of the other bits.
+	/**
+	 * 
+	 * @param packet
+	 * @param dataReceived
 	 */
-	private static String bytesToString(byte[] b) {
-		String s = "";
-		s += new String(b, 0, b.length);
-		return s;
-	}
-
-	/*
-	 * Helper method to print arrays of bytes.
-	 * Caps long strings to 80chars to make 100 byte arrays easier to read.
-	 */
-	private static void printBytes(byte[] bytes) {
-		String s = "";
-		if (bytes.length <= 5) {
-			for (int i = 0; i < bytes.length - 1; i++) {
-				s += bytes[i] + ", ";
-			}
-			System.out.println( s);
-			return;
+	private void printUDPData(DatagramPacket packet, boolean dataReceived) {
+		if (dataReceived) { // Print statements for received DatagramPacket
+			System.out.println("Port " + portNumber + ": packet received");
+			System.out.println("From host: " + packet.getAddress());
+			System.out.println("Host port: " + packet.getPort());
+		} else {
+			System.out.println("Port " + portNumber + ": sending packet");
+			System.out.println("To host: " + packet.getAddress());
+			System.out.println("Destination host port: " + packet.getPort());
+			
 		}
-		for (int i = 0; i < bytes.length - 1; i++) {
-			if (bytes[1] == 4) {
-				s += bytes[0] + ", " + bytes[1] + ", " + bytes[2] + ", " + bytes[3];
-				System.out.println( s);
-				return;
-			}
-			if (bytes[i] == 0 && bytes[i + 1] == 0) {
-				break;
-			}
-			s += bytes[i] + ", ";
-		}
-		System.out.println(s);
+		
+		System.out.print("Data as string: ");
+		System.out.println(ByteArray.bytesToString(packet.getData()));
+		System.out.print("Data in bytes: ");
+		ByteArray.printBytes(packet.getData());
+		System.out.println();
 	}
-	
 }

@@ -13,7 +13,7 @@ public class EventHandler implements Runnable {
 	
 	public EventHandler(List<CallEvent> list) {
 		this.list = list;
-		udp = new UDPHelper(10);
+		udp = new UDPHelper(29);
 		p = new Parser();
 	}
 	

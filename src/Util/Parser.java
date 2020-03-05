@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -17,6 +18,7 @@ import ElevatorSubSystem.Direction;
  */
 public class Parser 
 {
+	private SimpleDateFormat standard = new SimpleDateFormat("HH:mm:ss"); // Hours/Minutes/seconds/milliseconds
 
 	
 	/**
@@ -54,8 +56,7 @@ public class Parser
 		int endFloor = 0;
 		Direction direction = null;
 		Date date = null;
-
-		SimpleDateFormat standard = new SimpleDateFormat("HH:mm:ss"); // Hours/Minutes/seconds/milliseconds
+		
 
 		// Changing data to proper types
 		for (int i = 0; i < originaList.size(); i++) {
@@ -83,15 +84,41 @@ public class Parser
 		return newList;
 	}
 
-	public void parseByteEvent(byte[] b) {
+	/**
+	 * 
+	 * @param b, byte array //TODO
+	 * @return CallEvent
+	 */
+	public CallEvent parseByteEvent(byte[] b) {
 		
 		//String s = "" + (b[0] & 0xff + b[1] & 0xff);
+		
+		CallEvent tempParser;
+		int startFloor = 0;
+		int endFloor = 0;
+		Direction direction = null;
+		Date date = null;
 		
 		String s = new String(b, 0, b.length);
 		System.out.println("QWE recieved: " + s );
 		
+		// Parse string with delimiter
+		Scanner scanner = new Scanner(s);
+		scanner.useDelimiter(",");
+		try { 
+			
+			date = standard.parse(scanner.next());
+
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		startFloor = scanner.nextInt();
+		endFloor = scanner.nextInt();
+		direction = Direction.valueOf(scanner.next());
+		scanner.close();
 		
+		tempParser = new CallEvent(date, startFloor, endFloor, direction);
+		
+		return tempParser;
 	}
-
-
 }

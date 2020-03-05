@@ -1,13 +1,12 @@
 package Util;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
+
 
 /**
  * This Class contains method that can be used to manipulate arrays.
- * @author Sam Trip
+ * @author Samantha Tripp
  * @author BritneyBaker
  *
  */
@@ -57,17 +56,47 @@ public class ByteArray {
 	 * @return CallEvent
 	 */
 	public synchronized String decodeMessage(byte[] message) {
-		return printBytes(message);
+		return bytesToString(message);
 	
 	}
 	
+
 	/*
-	 * Helper method to print arrays of bytes.
-	 * Caps long strings to 80chars to make 100 byte arrays easier to read.
+	 * Parses the byte array so that it can show the first two bits (01, 02 or 03)
+	 * then formats a new string based off of the other bits.
 	 */
-	private static String printBytes(byte[] b) {
+	public static String bytesToString(byte[] b) {
 		String s = "";
 		s += new String(b, 0, b.length);
 		return s;
 	}
+	
+
+	/*
+	 * Helper method to print arrays of bytes.
+	 * Caps long strings to 80chars to make 100 byte arrays easier to read.
+	 */
+	public static void printBytes(byte[] bytes) {
+		String s = "";
+		if (bytes.length <= 5) {
+			for (int i = 0; i < bytes.length - 1; i++) {
+				s += bytes[i] + ", ";
+			}
+			System.out.println( s);
+			return;
+		}
+		for (int i = 0; i < bytes.length - 1; i++) {
+			if (bytes[1] == 4) {
+				s += bytes[0] + ", " + bytes[1] + ", " + bytes[2] + ", " + bytes[3];
+				System.out.println( s);
+				return;
+			}
+			if (bytes[i] == 0 && bytes[i + 1] == 0) {
+				break;
+			}
+			s += bytes[i] + ", ";
+		}
+		System.out.println(s);
+	}
+	
 }

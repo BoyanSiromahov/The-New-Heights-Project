@@ -32,6 +32,7 @@ public class Floor {
 	private ByteArray byteArray;
 
 	public static final int FLOOR_PORT = 33;
+	public static final int SCHEDULER_PORT = 29;
 
 	/**
 	 * The Floor object constructor. A Parser object is created that processes a CSV
@@ -66,9 +67,12 @@ public class Floor {
 					if (millis / 1000 == elapsedTime) { // when time listed in the csv is the same as elapsed sent event
 
 						System.out.println("Floor sending event to scheduler:\n" + floorEvents.get(i));
+						// Send floor event to scheduler
 						floorHelper.send(byteArray.createMessage(floorEvents.get(i)), Scheduler.SCHEDULER_PORT);
+						// Receive reply from scheduler
 						byteArray.decodeMessage(floorHelper.receive());
 						// TODO error handling for received data
+						
 						floorEvents.remove(i); // remove event from queue
 					}
 				}

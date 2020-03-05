@@ -1,10 +1,6 @@
 package SchedulerSubSystem;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+
 import java.text.ParseException;
 import java.util.Collections;
 
@@ -30,16 +26,18 @@ public class Scheduler{
 	private int arrivedFloor;
 	private List<CallEvent> eventQ;
 	private SchedulerState ss;
-	private UDPHelper schedulerHelper;
+	private UDPHelper schedulerUDPHelper;
+	private EventHandler eventHandler;
 	private ByteArray byteArray;
 	
 	public Scheduler() {
-		this.arrivedFloor = 0;
-		this.eventQ = Collections.synchronizedList(new LinkedList<CallEvent>());
-		this.ss = SchedulerState.IDLE;
-		this.schedulerHelper = new UDPHelper(SCHEDULER_PORT);
-		this.byteArray = new ByteArray();
-		
+		arrivedFloor = 0;
+		eventQ = Collections.synchronizedList(new LinkedList<CallEvent>());
+		eventHandler = new EventHandler(eventQ);
+		ss = SchedulerState.IDLE;
+		schedulerUDPHelper = new UDPHelper(SCHEDULER_PORT);
+		byteArray = new ByteArray();
+		eventHandler.run();
 	}
 
 	/***
@@ -101,7 +99,7 @@ public class Scheduler{
 		//eventQ.add(c);
 		System.out.println("QWEQWE ");
 		byte msg[] = new byte[] {1};
-		schedulerHelper.send(msg, 33);
+		schedulerUDPHelper.send(msg, 33);
 		ss = SchedulerState.E_REQUESTED;
 	} 
 	
@@ -136,9 +134,8 @@ public class Scheduler{
 	
 	public static void main(String[] args) throws ParseException 
 	{
-		Scheduler test = new Scheduler();
+		Scheduler s = new Scheduler();
 		
-		//test.run();
 	}
 
 }
