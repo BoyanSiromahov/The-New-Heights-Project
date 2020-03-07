@@ -92,7 +92,20 @@ public class Scheduler {
 	public synchronized void elevatorRequest() {
 		CallEvent c = eventHandler.receiveFloorRequest();
 		eventQ.add(c);
-		eventHandler.sendElevatorRequest(c);
+
+		if(!elevators.isEmpty()){
+
+            for (Map.Entry<Integer, int[]> pair : elevators.entrySet()) {
+
+                if(pair.getValue()[1] == ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST.ordinal() &&
+                        pair.getValue()[3] == ElevatorMotor.STOP.ordinal()){
+                    System.out.println("Sending To Port: " + pair.getValue()[0]);
+                    eventHandler.sendElevatorRequest(eventQ.get(0), pair.getValue()[0]);
+                }
+            }
+        }
+        eventQ.clear(); //Clear The Request After The Command Has Been Executed
+
 
 		ss = SchedulerState.E_REQUESTED;
 	}
@@ -109,14 +122,16 @@ public class Scheduler {
         
 
         // Map with Elevator Number as a key and the array as value associated
-//        elevators.put((int) elevatorStatus[0], new int[]{elevatorStatus[1],
-//                elevatorStatus[2], elevatorStatus[3], elevatorStatus[4]});
+        elevators.put((int) elevatorStatus[0], new int[]{elevatorStatus[1],
+                elevatorStatus[2], elevatorStatus[3], elevatorStatus[4]});
 
         //Send Wait Response After The Receiving The State Of The Elevator
         if (eventQ.isEmpty() && elevatorStatus[2] == ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST.ordinal() &&
                 elevatorStatus[4] == ElevatorMotor.STOP.ordinal()){
             //Reply With Response Of 0 Indicating Wait For Instructions
+
             //eventHandler.replyToElevatorStatus(new byte[]{0}, elevatorStatus[1]);
+
         }
 //        else{
 //                //Send The Respective Info
