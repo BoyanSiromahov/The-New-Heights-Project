@@ -56,8 +56,9 @@ public class EventHandler {
 		return c;
 	}
 	
-	public void sendElevatorRequest(CallEvent c) {
-		elevatorScheduler.send(elevatorScheduler.createMessage(c), ELEVATOR_PORT, false);
+	public void sendElevatorRequest(CallEvent c, int portNum) {
+		System.out.println("Sending Elevator Request");
+		elevatorScheduler.send(elevatorScheduler.createMessage(c), portNum, false);
 	}
 
     public byte[] receiveElevatorStatus() {

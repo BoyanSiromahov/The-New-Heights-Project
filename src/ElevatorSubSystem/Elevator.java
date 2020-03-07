@@ -171,8 +171,11 @@ public class Elevator implements Runnable {
                         System.out.println(String.format("[TIME: 00:00:%d] [ELEVATOR] [INFO] Passengers Exiting Elevator %d",
                                 elevatorElapsedTime, elevatorNumber ));
                         elevatorState = ElevatorState.ELEVATOR_STOPPED; // Elevator State = Stopped Reached Floor
+
                         System.out.println(String.format("[TIME: 00:00:%d] [ELEVATOR] [INFO] Elevator arrived at floor: %d\n",
                                 elevatorElapsedTime, currentElevatorLevel));
+
+                        elevatorState = ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST; // Elevator Waiting For Next Request
                         return true;
                     } else {
                         //Elevator Movement in a different direction
@@ -219,6 +222,7 @@ public class Elevator implements Runnable {
                         System.out.println(String.format("[TIME: 00:00:%d] [ELEVATOR] [INFO] Elevator arrived at " +
                                         "floor: %d\n", elevatorElapsedTime, currentElevatorLevel));
 
+                        elevatorState = ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST; // Elevator Waiting For Next Request
                         sendElevatorStatus();  // Informing the Scheduler of the Elevator Current State
 
                         return true;
@@ -360,11 +364,9 @@ public class Elevator implements Runnable {
             // System.out.println(Thread.currentThread().getName());
 
             sendElevatorStatus();
-            if (elevatorHelper.receive()[0] != 0) {
-                commandReceived.add(elevatorParser.parseByteEvent(elevatorHelper.receive()));
-                if (receiveAndCheckSchedulerRequest()) {
+            commandReceived.add(elevatorParser.parseByteEvent(elevatorHelper.receive()));
+            if (receiveAndCheckSchedulerRequest()) {
 
-                }
             }
 
         }
