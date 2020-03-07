@@ -15,11 +15,13 @@ public class UDPHelper {
 	private DatagramSocket socket;
 	private DatagramPacket sendPacket, receivePacket;
 	private int portNumber;
+	private InetAddress hostAddress;
 	private byte[] data;
 	
-	public UDPHelper(int portNumber) {
+	public UDPHelper(int portNumber, InetAddress ipAddress) {
 		// Construct DatagramSocket and bind it to portNumber
 		this.portNumber = portNumber;
+		hostAddress = ipAddress;
 		try {
 			socket = new DatagramSocket(portNumber);
 		} catch (SocketException se) {
@@ -30,21 +32,16 @@ public class UDPHelper {
 		}
 	}
 
-	public void send(byte[] message, int destinationPort) {
+	public void send(byte[] message, int destinationPort, boolean elevatorStatus) {
 		
 		// Construct DataPacket to send message
-		try {
-			sendPacket = new DatagramPacket(message, message.length, InetAddress.getLocalHost(), destinationPort);
-		} catch (UnknownHostException e) {
-			System.out.println("Error constructing sendPacket:");
-			e.printStackTrace();
-			System.exit(1);
-		}
-				
-		// Print packet information
-		printUDPData(sendPacket, false);
-		
-				
+        sendPacket = new DatagramPacket(message, message.length, hostAddress, destinationPort);
+
+        // Print packet information
+        if(!elevatorStatus){
+            printUDPData(sendPacket, false);
+        }
+
 		// Send the DatagramPacket 
 		try {
 			socket.send(sendPacket);
@@ -53,7 +50,11 @@ public class UDPHelper {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		System.out.println("Packet sent.\n");
+
+        if(!elevatorStatus){
+            System.out.println("Packet sent.\n");
+        }
+
 	}
 	
 	public byte[] receive() {
@@ -85,7 +86,7 @@ public class UDPHelper {
 	 */
 	private void printUDPData(DatagramPacket packet, boolean dataReceived) {
 		if (dataReceived) { // Print statements for received DatagramPacket
-			System.out.println("Port " + portNumber + ": packet received");
+			System.out.println("Port " + portNumber + ": Packet received");
 			System.out.println("From host: " + packet.getAddress());
 			System.out.println("Host port: " + packet.getPort());
 		} else {

@@ -2,6 +2,8 @@
 package FloorSubSystem;
 
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -30,14 +32,13 @@ public class Floor {
 	/**
 	 * The Floor object constructor. A Parser object is created that processes a CSV
 	 * file, and this data is transferred to the scheduler.
-	 * 
-	 * @param scheduler
+	 *
 	 * @param floorEvents
 	 */
-	public Floor(List<CallEvent> floorEvents) {
+	public Floor(List<CallEvent> floorEvents, InetAddress hostIPAddress) {
 		this.eventQ = new LinkedList<Integer>();
 		this.floorEvents = floorEvents;
-		this.floorHelper = new UDPHelper(FLOOR_PORT);
+		this.floorHelper = new UDPHelper(FLOOR_PORT, hostIPAddress);
 	}
 
 	/***
@@ -60,7 +61,8 @@ public class Floor {
 
 						System.out.println("Floor sending event to scheduler:\n" + floorEvents.get(i));
 						// Send floor event to scheduler
-						floorHelper.send(floorHelper.createMessage(floorEvents.get(i)), FLOOR_SCHEDULER_PORT);
+						floorHelper.send(floorHelper.createMessage(floorEvents.get(i)), FLOOR_SCHEDULER_PORT,
+                                false);
 						// Receive reply from scheduler
 						floorHelper.decodeMessage(floorHelper.receive());
 						// TODO error handling for received data
@@ -87,7 +89,7 @@ public class Floor {
 	 * scheduler.elevatorBoarded(); }
 	 */
 
-	public static void main(String[] args) throws ParseException {
+	public static void main(String[] args) throws ParseException, UnknownHostException {
 
 		Parser parser = new Parser();
 		List<CallEvent> elevatorEvents = new ArrayList<CallEvent>();
@@ -95,7 +97,7 @@ public class Floor {
 		csvData = Parser.csvReader();
 		elevatorEvents = parser.makeList(csvData);
 		
-		Floor f = new Floor(elevatorEvents);
+		Floor f = new Floor(elevatorEvents, InetAddress.getLocalHost());
 		f.start();
 	}
 

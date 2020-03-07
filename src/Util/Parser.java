@@ -102,7 +102,7 @@ public class Parser
 		Date date = null;
 		
 		String s = new String(b, 0, b.length);
-		System.out.println("QWE recieved: " + s );
+		System.out.println("Request received: " + s );
 		
 		// Parse string with delimiter
 		Scanner scanner = new Scanner(s);

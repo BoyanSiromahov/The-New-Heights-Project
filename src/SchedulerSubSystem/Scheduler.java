@@ -1,7 +1,9 @@
 package SchedulerSubSystem;
 
 
-import java.util.Collections;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
 
 /**
  * The main class for the scheduler. This class is used as an middle man to 
@@ -11,9 +13,10 @@ import java.util.Collections;
  * @author Boyan Siromahov
  */
 
-import java.util.LinkedList;
-import java.util.List;
-
+import ElevatorSubSystem.Direction;
+import ElevatorSubSystem.Elevator;
+import ElevatorSubSystem.ElevatorMotor;
+import ElevatorSubSystem.ElevatorState;
 import Util.CallEvent;
 
 public class Scheduler {
@@ -21,12 +24,14 @@ public class Scheduler {
 	
 	private int arrivedFloor;
 	private List<CallEvent> eventQ;
+	private Map<Integer, int[]> elevators;
 	private EventHandler eventHandler;
 	private SchedulerState ss;
 	
-	public Scheduler() {
+	public Scheduler(InetAddress hostIPAddrress) {
 		arrivedFloor = 0;
 		eventQ = Collections.synchronizedList(new LinkedList<CallEvent>());
+		elevators = Collections.synchronizedMap(new HashMap<Integer, int[]>());
 		eventHandler = new EventHandler(this, eventQ);
 		ss = SchedulerState.IDLE;
 	}
@@ -82,16 +87,55 @@ public class Scheduler {
 	/***
 	 * This function is used to notify the scheduler to flip the boarded flag to
 	 * true which will then allow the elevator to move
-	 * 
-	 * @param p - the elevator request that is sent from the floor.
+	 *
 	 */
 	public synchronized void elevatorRequest() {
 		CallEvent c = eventHandler.receiveFloorRequest();
 		eventQ.add(c);
 		eventHandler.sendElevatorRequest(c);
-		
+
 		ss = SchedulerState.E_REQUESTED;
-	} 
+	}
+
+	public void elevatorStatus(){
+
+        // [0] -> Elevator Number
+        // [1] -> Elevator Port Number
+	    // [2] -> The Current State of the Elevator
+        // [3] -> The Current Floor Level of the Elevator
+        // [4] -> The Current Direction of the Elevator Motor
+
+        byte[] elevatorStatus = eventHandler.receiveElevatorStatus();
+        System.out.println("Elevator " + elevatorStatus[0]);
+        System.out.println("Current Elevator State: "+ ElevatorState.values()[elevatorStatus[2]].toString());
+        System.out.println("Current Elevator Floor: "+ elevatorStatus[3]);
+        System.out.println("Current Elevator Motor State: "+ ElevatorMotor.values()[elevatorStatus[4]].toString() +'\n');
+
+        // Map with Elevator Number as a key and the array as value associated
+//        elevators.put((int) elevatorStatus[0], new int[]{elevatorStatus[1],
+//                elevatorStatus[2], elevatorStatus[3], elevatorStatus[4]});
+
+        //Send Wait Response After The Receiving The State Of The Elevator
+        if (eventQ.isEmpty() && elevatorStatus[2] == ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST.ordinal() &&
+                elevatorStatus[4] == ElevatorMotor.STOP.ordinal()){
+            //Reply With Response Of 0 Indicating Wait For Instructions
+            eventHandler.replyToElevatorStatus(new byte[]{0}, elevatorStatus[1]);
+        }
+//        else{
+//                //Send The Respective Info
+//            }
+//        }
+
+
+//        elevators.forEach((k, v) -> {
+//            if(v[2] == ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST.ordinal()){
+//
+//            }
+//        });
+        //eventHandler.sendElevatorRequest(eventQ.get(0));
+
+
+    }
 	
 
 	/***
@@ -122,11 +166,30 @@ public class Scheduler {
 	}
 
 	
-	public static void main(String[] args)
-	{
-		Scheduler s = new Scheduler();
-		s.elevatorRequest();
-		
+	public static void main(String[] args) throws UnknownHostException {
+
+        Scheduler schedulerControl = new Scheduler(InetAddress.getLocalHost());
+
+        Thread floor_To_Scheduler = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    schedulerControl.elevatorRequest();
+                }
+            }
+        }, "Floor_Scheduler_Communication_Link");
+        floor_To_Scheduler.start();
+
+        Thread scheduler_To_Elevator = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    schedulerControl.elevatorStatus();
+                }
+            }
+        }, "Scheduler_Elevator_Communication_Link");
+        scheduler_To_Elevator.start();
+
 	}
 
 }
