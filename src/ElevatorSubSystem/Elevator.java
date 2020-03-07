@@ -360,8 +360,8 @@ public class Elevator implements Runnable {
             // System.out.println(Thread.currentThread().getName());
 
             sendElevatorStatus();
-            if (elevatorHelper.receive()[0] != 0) {
-                commandReceived.add(elevatorParser.parseByteEvent(elevatorHelper.receive()));
+            if (elevatorHelper.receive(false)[0] != 0) {
+                commandReceived.add(elevatorParser.parseByteEvent(elevatorHelper.receive(false)));
                 if (receiveAndCheckSchedulerRequest()) {
 
                 }

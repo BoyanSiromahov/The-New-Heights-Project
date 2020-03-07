@@ -46,7 +46,7 @@ public class EventHandler {
 
 	public CallEvent receiveFloorRequest() {
 		CallEvent c;
-		c = p.parseByteEvent(floorScheduler.receive());
+		c = p.parseByteEvent(floorScheduler.receive(false));
 		try {
 			floorScheduler.send(floorScheduler.createReply(), FLOOR_PORT, false);
 		} catch (IOException e) {
@@ -62,7 +62,7 @@ public class EventHandler {
 
     public byte[] receiveElevatorStatus() {
 
-        byte[] status = elevatorScheduler.receive();
+        byte[] status = elevatorScheduler.receive(true);
         return status;
     }
 
