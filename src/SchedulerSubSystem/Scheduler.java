@@ -13,8 +13,6 @@ import java.util.*;
  * @author Boyan Siromahov
  */
 
-import ElevatorSubSystem.Direction;
-import ElevatorSubSystem.Elevator;
 import ElevatorSubSystem.ElevatorMotor;
 import ElevatorSubSystem.ElevatorState;
 import Util.CallEvent;
@@ -28,7 +26,7 @@ public class Scheduler {
 	private EventHandler eventHandler;
 	private SchedulerState ss;
 	
-	public Scheduler(InetAddress hostIPAddrress) {
+	public Scheduler() {
 		arrivedFloor = 0;
 		eventQ = Collections.synchronizedList(new LinkedList<CallEvent>());
 		elevators = Collections.synchronizedMap(new HashMap<Integer, int[]>());
@@ -87,9 +85,8 @@ public class Scheduler {
 	/***
 	 * This function is used to notify the scheduler to flip the boarded flag to
 	 * true which will then allow the elevator to move
-	 *
 	 */
-	public synchronized void elevatorRequest() {
+	public synchronized void elevatorRequest() throws UnknownHostException {
 		CallEvent c = eventHandler.receiveFloorRequest();
 		eventQ.add(c);
 
@@ -134,18 +131,6 @@ public class Scheduler {
             //Reply With Response Of 0 Indicating Wait For Instructions
             // eventHandler.replyToElevatorStatus(new byte[]{0}, elevatorStatus[1]);
         }
-//        else{
-//                //Send The Respective Info
-//            }
-//        }
-
-
-//        elevators.forEach((k, v) -> {
-//            if(v[2] == ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST.ordinal()){
-//
-//            }
-//        });
-        //eventHandler.sendElevatorRequest(eventQ.get(0));
 
 
     }
@@ -181,13 +166,16 @@ public class Scheduler {
 	
 	public static void main(String[] args) throws UnknownHostException {
 
-        Scheduler schedulerControl = new Scheduler(InetAddress.getLocalHost());
-
+        Scheduler schedulerControl = new Scheduler();
         Thread floor_To_Scheduler = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (true) {
-                    schedulerControl.elevatorRequest();
+                    try {
+                        schedulerControl.elevatorRequest();
+                    } catch (UnknownHostException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }, "Floor_Scheduler_Communication_Link");

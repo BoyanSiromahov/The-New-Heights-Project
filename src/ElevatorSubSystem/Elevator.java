@@ -4,8 +4,7 @@ import Util.CallEvent;
 import Util.Parser;
 import Util.UDPHelper;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -65,10 +64,11 @@ public class Elevator implements Runnable {
         this.elevatorNumber = elevatorNumber;
         commandReceived = new LinkedList<>();
         elevatorParser = new Parser();
+        elevatorParser.ipAddressReader();
 
         //The IP Address Of the Elevator is the Same
         //System.out.println(InetAddress.getLocalHost());
-        this.elevatorHelper = new UDPHelper(elevatorPort, InetAddress.getLocalHost());
+        this.elevatorHelper = new UDPHelper(elevatorPort);
         // byte[] request = "Configured".getBytes();
         //elevatorHelper.send(request, ELEVATOR_SCHEDULER_PORT, false);
         initialiseDataSet();
@@ -347,11 +347,17 @@ public class Elevator implements Runnable {
      * Is used to send the current status of the elevator to the Scheduler
      */
     private synchronized void sendElevatorStatus(){
-        elevatorHelper.send(new byte[]{
-                (byte) elevatorNumber, (byte) elevatorPort,
-                        (byte) getElevatorState().ordinal(), (byte) currentElevatorLevel, (byte) motor.ordinal()},
-                ELEVATOR_SCHEDULER_PORT, true);
+        try {
+            elevatorHelper.send(new byte[]{
+                    (byte) elevatorNumber, (byte) elevatorPort,
+                            (byte) getElevatorState().ordinal(), (byte) currentElevatorLevel, (byte) motor.ordinal()},
+                    ELEVATOR_SCHEDULER_PORT, true,
+                    InetAddress.getByName(elevatorParser.systemAddresses.get(1)));
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
+    
     /***
      * This is the main method that is implemented from the Runnable interface. This
      * method ensure that only one elevator thread can process the request and
@@ -359,10 +365,7 @@ public class Elevator implements Runnable {
      */
     @Override
     public void run() {
-
         while (true) {
-            // System.out.println(Thread.currentThread().getName());
-
             sendElevatorStatus();
             commandReceived.add(elevatorParser.parseByteEvent(elevatorHelper.receive()));
             if (receiveAndCheckSchedulerRequest()) {
@@ -370,6 +373,7 @@ public class Elevator implements Runnable {
             }
 
         }
+    }
 //            if (elevatorHelper.receive()[0] == 0) {
 //                //System.out.println(String.format("[%s] Waiting For Floor Request", Thread.currentThread().getName()));
 //            }else{
@@ -384,7 +388,6 @@ public class Elevator implements Runnable {
 //            }
 //    	}
 //    }
-    }
     public static void main(String[] args)
 	{
         Thread elevatorThread_1, elevatorThread_2;

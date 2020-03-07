@@ -35,10 +35,10 @@ public class Floor {
 	 *
 	 * @param floorEvents
 	 */
-	public Floor(List<CallEvent> floorEvents, InetAddress hostIPAddress) {
+	public Floor(List<CallEvent> floorEvents) {
 		this.eventQ = new LinkedList<Integer>();
 		this.floorEvents = floorEvents;
-		this.floorHelper = new UDPHelper(FLOOR_PORT, hostIPAddress);
+		this.floorHelper = new UDPHelper(FLOOR_PORT);
 	}
 
 	/***
@@ -47,7 +47,7 @@ public class Floor {
 	 * respond accordingly. (Ensure The Operation is Atomic)
 	 */
 
-	public void start(){
+	public void start() throws UnknownHostException {
 
 		long startTime = System.currentTimeMillis() / 1000;
 		long elapsedTime = 0L;
@@ -62,7 +62,7 @@ public class Floor {
 						System.out.println("Floor sending event to scheduler:\n" + floorEvents.get(i));
 						// Send floor event to scheduler
 						floorHelper.send(floorHelper.createMessage(floorEvents.get(i)), FLOOR_SCHEDULER_PORT,
-                                false);
+                                false, InetAddress.getByName("192.168.56.1"));
 						// Receive reply from scheduler
 						floorHelper.decodeMessage(floorHelper.receive());
 						// TODO error handling for received data
@@ -89,7 +89,7 @@ public class Floor {
 	 * scheduler.elevatorBoarded(); }
 	 */
 
-	public static void main(String[] args) throws ParseException, UnknownHostException {
+	public static void main(String[] args) throws ParseException {
 
 		Parser parser = new Parser();
 		List<CallEvent> elevatorEvents = new ArrayList<CallEvent>();
@@ -97,8 +97,12 @@ public class Floor {
 		csvData = Parser.csvReader();
 		elevatorEvents = parser.makeList(csvData);
 		
-		Floor f = new Floor(elevatorEvents, InetAddress.getLocalHost());
-		f.start();
+		Floor f = new Floor(elevatorEvents);
+		try {
+			f.start();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

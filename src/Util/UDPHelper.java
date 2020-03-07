@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.net.*;
 
 /**
- * 
+ * The UDP Helper Class
  * @author Samantha Tripp
  *
  */
@@ -15,27 +15,34 @@ public class UDPHelper {
 	private DatagramSocket socket;
 	private DatagramPacket sendPacket, receivePacket;
 	private int portNumber;
-	private InetAddress hostAddress;
+	private InetAddress destinationHostAddress;
 	private byte[] data;
-	
-	public UDPHelper(int portNumber, InetAddress ipAddress) {
+
+    /**
+     * The constructor of the UDP Helper class with the associated PORT Number
+     * @param portNumber
+     */
+	public UDPHelper(int portNumber) {
 		// Construct DatagramSocket and bind it to portNumber
 		this.portNumber = portNumber;
-		hostAddress = ipAddress;
 		try {
 			socket = new DatagramSocket(portNumber);
-		} catch (SocketException se) {
-			// Error creating DatagramSocket
-			System.out.println("Error creating DatagramSocket:");
-			se.printStackTrace();
-			System.exit(1);
-		}
-	}
+		} catch (SocketException e) {
+            e.printStackTrace();
+        }
+    }
 
-	public void send(byte[] message, int destinationPort, boolean elevatorStatus) {
-		
+    /**
+     * The UDP Send Packet command
+     * @param message, The associated message
+     * @param destinationPort, The destination selected port number
+     * @param elevatorStatus, the elevator status used to check the elevators 
+     * @param portAddress
+     */
+	public void send(byte[] message, int destinationPort, boolean elevatorStatus, InetAddress portAddress) {
+
 		// Construct DataPacket to send message
-        sendPacket = new DatagramPacket(message, message.length, hostAddress, destinationPort);
+        sendPacket = new DatagramPacket(message, message.length, portAddress, destinationPort);
 
         // Print packet information
         if(!elevatorStatus){
@@ -62,7 +69,7 @@ public class UDPHelper {
 		// Construct DatagramPacket to receive data
 		data = new byte[100];
 		receivePacket = new DatagramPacket(data, data.length);
-		
+		destinationHostAddress = receivePacket.getAddress();
 		// Block until a DatagramPacket response is received
 		try { 
 			System.out.println("UDP Handler: waiting for packet");
@@ -213,6 +220,10 @@ public class UDPHelper {
 		}
 		System.out.println(s);
 	}
+
+	public InetAddress getDestinationHostAddress(){
+	    return destinationHostAddress;
+    }
 
 	
 }
