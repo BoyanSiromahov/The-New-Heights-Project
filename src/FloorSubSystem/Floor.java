@@ -64,7 +64,7 @@ public class Floor {
 						floorHelper.send(floorHelper.createMessage(floorEvents.get(i)), FLOOR_SCHEDULER_PORT,
                                 false, InetAddress.getByName("192.168.56.1"));
 						// Receive reply from scheduler
-						floorHelper.decodeMessage(floorHelper.receive());
+						floorHelper.decodeMessage(floorHelper.receive(false));
 						// TODO error handling for received data
 						
 						floorEvents.remove(i); // remove event from queue

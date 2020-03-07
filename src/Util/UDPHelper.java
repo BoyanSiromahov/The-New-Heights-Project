@@ -4,6 +4,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.*;
 
+import ElevatorSubSystem.ElevatorMotor;
+import ElevatorSubSystem.ElevatorState;
+
 /**
  * The UDP Helper Class
  * @author Samantha Tripp
@@ -46,7 +49,7 @@ public class UDPHelper {
 
         // Print packet information
         if(!elevatorStatus){
-            printUDPData(sendPacket, false);
+            printUDPData(sendPacket, false, false);
         }
 
 		// Send the DatagramPacket 
@@ -64,7 +67,7 @@ public class UDPHelper {
 
 	}
 	
-	public byte[] receive() {
+	public byte[] receive(boolean printElevatorStatus) {
 		
 		// Construct DatagramPacket to receive data
 		data = new byte[100];
@@ -81,7 +84,7 @@ public class UDPHelper {
 			System.exit(1);
 		}
 		// Process the received DataPacket
-		printUDPData(receivePacket, true);
+		printUDPData(receivePacket, true, printElevatorStatus);
 		return data;
 	}
 	
@@ -91,7 +94,7 @@ public class UDPHelper {
 	 * @param packet, The DatagramPacket containing the data to print.
 	 * @param dataReceived, Indicator of an incoming (true) or outgoing (false) DatagramPacket.
 	 */
-	private void printUDPData(DatagramPacket packet, boolean dataReceived) {
+	private void printUDPData(DatagramPacket packet, boolean dataReceived, boolean elevatorStatus) {
 		if (dataReceived) { // Print statements for received DatagramPacket
 			System.out.println("Port " + portNumber + ": Packet received");
 			System.out.println("From host: " + packet.getAddress());
@@ -100,11 +103,25 @@ public class UDPHelper {
 			System.out.println("Port " + portNumber + ": sending packet");
 			System.out.println("To host: " + packet.getAddress());
 			System.out.println("Destination host port: " + packet.getPort());
-			
 		}
 		
 		System.out.print("Data as string: ");
-		System.out.println(bytesToString(packet.getData()));
+		if (!elevatorStatus) {
+			System.out.println(bytesToString(packet.getData()));
+		} else {
+			
+			//Print elevator status information
+			// [0] -> Elevator Number
+	        // [1] -> Elevator Port Number
+		    // [2] -> The Current State of the Elevator
+	        // [3] -> The Current Floor Level of the Elevator
+	        // [4] -> The Current Direction of the Elevator Motor
+			
+			System.out.println("\nElevator " + packet.getData()[0]);
+	        System.out.println("Current Elevator State: "+ ElevatorState.values()[packet.getData()[2]].toString());
+	        System.out.println("Current Elevator Floor: "+ packet.getData()[3]);
+	        System.out.println("Current Elevator Motor State: "+ ElevatorMotor.values()[packet.getData()[4]].toString() +'\n');
+		}
 		System.out.print("Data in bytes: ");
 		printBytes(packet.getData());
 		System.out.println();
@@ -144,8 +161,9 @@ public class UDPHelper {
 	}
 	
 	/**
+	 * Create a reply byte array confirming that a DatagramPacket was received.
 	 * 
-	 * @return
+	 * @return Byte array
 	 * @throws IOException
 	 */
 	public byte[] createReply() throws IOException {

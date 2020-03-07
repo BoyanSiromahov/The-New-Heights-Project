@@ -116,10 +116,7 @@ public class Scheduler {
         // [4] -> The Current Direction of the Elevator Motor
 
         byte[] elevatorStatus = eventHandler.receiveElevatorStatus();
-        System.out.println("Elevator " + elevatorStatus[0]);
-        System.out.println("Current Elevator State: "+ ElevatorState.values()[elevatorStatus[2]].toString());
-        System.out.println("Current Elevator Floor: "+ elevatorStatus[3]);
-        System.out.println("Current Elevator Motor State: "+ ElevatorMotor.values()[elevatorStatus[4]].toString() +'\n');
+        
 
         // Map with Elevator Number as a key and the array as value associated
         elevators.put((int) elevatorStatus[0], new int[]{elevatorStatus[1],
@@ -129,7 +126,9 @@ public class Scheduler {
         if (eventQ.isEmpty() && elevatorStatus[2] == ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST.ordinal() &&
                 elevatorStatus[4] == ElevatorMotor.STOP.ordinal()){
             //Reply With Response Of 0 Indicating Wait For Instructions
-            // eventHandler.replyToElevatorStatus(new byte[]{0}, elevatorStatus[1]);
+
+            //eventHandler.replyToElevatorStatus(new byte[]{0}, elevatorStatus[1]);
+
         }
 
 

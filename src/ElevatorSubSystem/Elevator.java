@@ -367,27 +367,15 @@ public class Elevator implements Runnable {
     public void run() {
         while (true) {
             sendElevatorStatus();
-            commandReceived.add(elevatorParser.parseByteEvent(elevatorHelper.receive()));
-            if (receiveAndCheckSchedulerRequest()) {
+
+            if (elevatorHelper.receive(false)[0] != 0) {
+                commandReceived.add(elevatorParser.parseByteEvent(elevatorHelper.receive(false)));
+                receiveAndCheckSchedulerRequest();
+                //TODO
 
             }
-
         }
     }
-//            if (elevatorHelper.receive()[0] == 0) {
-//                //System.out.println(String.format("[%s] Waiting For Floor Request", Thread.currentThread().getName()));
-//            }else{
-//                System.out.println(String.format("[%s] Got The Floor Request", Thread.currentThread().getName()));
-//                commandReceived.add(elevatorParser.parseByteEvent(elevatorHelper.receive()));
-//                receiveAndCheckSchedulerRequest();
-////                if () {
-////                    System.out.println(Thread.currentThread().getName() + " Completed It's Job");
-////                    //System.exit(0);
-////        		}
-//
-//            }
-//    	}
-//    }
     public static void main(String[] args)
 	{
         Thread elevatorThread_1, elevatorThread_2;
