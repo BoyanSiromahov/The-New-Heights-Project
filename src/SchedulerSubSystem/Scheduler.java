@@ -87,38 +87,45 @@ public class Scheduler {
 	 * true which will then allow the elevator to move
 	 */
 	public synchronized void elevatorRequest() throws UnknownHostException {
+	    // Associated Values
+        // [0] -> Elevator Port Number
+        // [1] -> The Current State of the Elevator
+        // [2] -> The Current Floor Level of the Elevator
+        // [3] -> The Current Direction of the Elevator Motor
 		CallEvent c = eventHandler.receiveFloorRequest();
 		eventQ.add(c);
-        int bestElevator = 0;
+        int bestElevator = 1;
 
         if(!elevators.isEmpty())
         {
             for (Map.Entry<Integer, int[]> pair : elevators.entrySet())
             {
-                if(pair.getValue()[3] == ElevatorMotor.UPWARD.ordinal() && pair.getValue()[3] <=eventQ.get(0).getStartFloor())
+                if(pair.getValue()[3] == ElevatorMotor.UPWARD.ordinal() && pair.getValue()[2] <=eventQ.get(0).getStartFloor())
                 {
-                    if(elevators.get(bestElevator)[3] - eventQ.get(0).getStartFloor() > pair.getValue()[3] - eventQ.get(0).getStartFloor())
+                    if(elevators.get(bestElevator)[2] - eventQ.get(0).getStartFloor() > pair.getValue()[2] - eventQ.get(0).getStartFloor())
                     {
-                        bestElevator = pair.getValue()[0];
+                        bestElevator = pair.getKey();
                     }
                 }
-                else if(pair.getValue()[3] == ElevatorMotor.DOWNWARD.ordinal() && pair.getValue()[3] >=eventQ.get(0).getStartFloor())
+                else if(pair.getValue()[3] == ElevatorMotor.DOWNWARD.ordinal() && pair.getValue()[2] >=eventQ.get(0).getStartFloor())
                 {
-                    if(elevators.get(bestElevator)[3] - eventQ.get(0).getStartFloor() > pair.getValue()[3] - eventQ.get(0).getStartFloor())
+                    if(elevators.get(bestElevator)[3] - eventQ.get(0).getStartFloor() >= pair.getValue()[2] - eventQ.get(0).getStartFloor())
                     {
-                        bestElevator = pair.getValue()[0];
+                        bestElevator = pair.getKey();
                     }
                 }
-                else //DOWNWARD
+                else //IDLE
                 {
-                    if(elevators.get(bestElevator)[3] - eventQ.get(0).getStartFloor() > pair.getValue()[3] - eventQ.get(0).getStartFloor())
+                    if(elevators.get(bestElevator)[2] - eventQ.get(0).getStartFloor() > pair.getValue()[2] - eventQ.get(0).getStartFloor())
                     {
-                        bestElevator = pair.getValue()[0];
+                        bestElevator = pair.getKey();
                     }
                 }
             }
-            eventHandler.sendElevatorRequest(eventQ.get(0), elevators.get(bestElevator)[1]);
-            //eventQ.clear(); //Clear The Request After The Command Has Been Executed
+
+            eventHandler.sendElevatorRequest(eventQ.get(0), elevators.get(bestElevator)[0]);
+            eventQ.clear(); //Clear The Request After The Command Has Been Executed
+
         }
 //		if(!elevators.isEmpty()){
 //
