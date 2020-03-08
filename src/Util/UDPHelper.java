@@ -3,12 +3,11 @@ package Util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.*;
-
 import ElevatorSubSystem.ElevatorMotor;
 import ElevatorSubSystem.ElevatorState;
 
 /**
- * The UDP Helper Class
+ * The UDP Helper Class.
  * @author Samantha Tripp
  *
  */
@@ -40,7 +39,7 @@ public class UDPHelper {
      * @param message, The associated message
      * @param destinationPort, The destination selected port number
      * @param elevatorStatus, the elevator status used to check the elevators 
-     * @param portAddress
+     * @param portAddress, The IP Address of destination
      */
 	public void send(byte[] message, int destinationPort, boolean elevatorStatus, InetAddress portAddress) {
 
@@ -66,7 +65,12 @@ public class UDPHelper {
         }
 
 	}
-	
+
+    /**
+     * The UDP Helper To Receive The Packet From the Associated Socket
+     * @param printElevatorStatus, Flag used to minimise the (Suppress The Print Statements)
+     * @return The data that is received
+     */
 	public byte[] receive(boolean printElevatorStatus) {
 		
 		// Construct DatagramPacket to receive data
@@ -131,7 +135,7 @@ public class UDPHelper {
 	 * Function to convert CallEvent objects to byte array messages for
 	 * use in constructing DatagramPackets.
 	 * 
-	 * @param floorEvent
+	 * @param floorEvent, The associated floor request
 	 */
 	public byte[] createMessage(CallEvent floorEvent) {
 		
@@ -188,8 +192,8 @@ public class UDPHelper {
 	 * Private method to decode byte array received in DatagramPacket to
 	 * a CallEvent object.
 	 * 
-	 * @param message
-	 * @return CallEvent
+	 * @param message, The byte array that is to be decoded
+	 * @return string, the decoded message
 	 */
 	public synchronized String decodeMessage(byte[] message) {
 		return bytesToString(message);
@@ -201,8 +205,8 @@ public class UDPHelper {
 	 * Parses the byte array so that it can show the first two bits (01, 02 or 03)
 	 * then formats a new string based off of the other bits.
 	 * 
-	 * @param b
-	 * @return
+	 * @param b, the byte array that is to be printed
+	 * @return s, the computed string from the decoded bytes
 	 */
 	public static String bytesToString(byte[] b) {
 		String s = "";
@@ -214,7 +218,7 @@ public class UDPHelper {
 	 * Helper method to print arrays of bytes.
 	 * Caps long strings to 80chars to make 100 byte arrays easier to read.
 	 * 
-	 * @param bytes
+	 * @param bytes, the bytes that need to be decoded
 	 */
 	public static void printBytes(byte[] bytes) {
 		String s = "";
@@ -239,9 +243,6 @@ public class UDPHelper {
 		System.out.println(s);
 	}
 
-	public InetAddress getDestinationHostAddress(){
-	    return destinationHostAddress;
-    }
 
 	
 }

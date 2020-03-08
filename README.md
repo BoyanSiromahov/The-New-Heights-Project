@@ -1,6 +1,6 @@
 # The-New-Heights-Project
 
-## Elevator Simulation System: Iteration 2
+## Elevator Simulation System: Iteration 3
 
 
 ### ElevatorSubSystem
@@ -30,27 +30,31 @@
     Author: Boyan Siromahov
     
     Scheduler.java - The Class representing the Scheduler (Communication Channel B/w Elevator and Floor)
-
+    EventHandler.java - The Helper Class For The Scheduler 
+    
 ### Util
     Author: Shaun Gordon
-        
+    
+    UDPHelper.java - The UDP Communication Helper Class
     Parser.java - The Class representing the Parser for the input command file (Input Processing Unit)
     
 ====================================================================
 
 Responsibilities
 
-    1. Boyan Siromahov - SchedulerSubSystem Development 
-    2. Shaun Gordon - Util (Parser) Development
-    3. Muneeb Nasur - ElevatorSubSystem - State Machine Development
-    4. Samantha Tripp - FloorSubSystem Development - State Machine Diagram 
+    1. Boyan Siromahov - SchedulerSubSystem - UDP Communication Development 
+    2. Shaun Gordon - SchedulerSubSystem & ElevatorSubSystem - Multi-Elevator System Development
+    3. Muneeb Nasur - SchedulerSubSystem & ElevatorSubSystem - Multi-Elevator System Development - Unit Tests
+    4. Samantha Tripp - UDP Communication Development 
     5. Britney Baker - UML Diagrams
     
 ====================================================================
 
 #### Run Instructions
 
-1. Run Main.java
+1. Run Scheduler.java
+2. Run Elevator.java
+3. Run Floor.java
 
 #### Testing Instructions
 
@@ -58,31 +62,3 @@ Responsibilities
 
     The TestAll.java is responsible for running all the JUnit Test for individual classes in the project.
     
-    Expected Output from the successful run of the JUnit Test:
-    
-       [JUNIT TESTING]
-
-	JUnit Test: The Elevator Class successfully identifies the Invalid Request
-
-
-2. Run Floor_Scheduler_ElevatorTest.java (Test Case for Communication Channel)
-    
-    This is used to check the running of the entire system as a single component with active threads incorporated 
-    with the State Machine 
-    
-    Expected Outcome: Showing all the states of the machine and the timing overview  
-    
-    	Floor sending event to scheduler:
-        Floor Call event: Start floor, 1 End floor, 2 called using, UP at, Thu Jan 01 00:00:05 EST 1970
-        Request recieved
-        Scheduler sending event to elevator:
-        Floor Call event: Start floor, 1 End floor, 2 called using, UP at, Thu Jan 01 00:00:05 EST 1970
-        [TIME: 00:00:05] [ELEVATOR] [INFO] Elevator 1 Currently In Service Receives Request
-        [TIME: 00:00:07] [ELEVATOR] [INFO] Elevator 1 Boarding
-        [TIME: 00:00:09] [ELEVATOR] [INFO] Elevator 1 Doors Closing
-        [TIME: 00:00:13] [ELEVATOR] [INFO] Elevator 1 Moving UP To Floor Number: 2 From: 1
-        [TIME: 00:00:13] [ELEVATOR] [INFO] Elevator 1 Has Reached Floor Number: 2
-        [TIME: 00:00:15] [ELEVATOR] [INFO] Elevator 1 Doors Opening
-    
-        [TIME: 00:00:17] [ELEVATOR] [INFO] Passengers Exiting Elevator 1
-        [TIME: 00:00:17] [ELEVATOR] [INFO] Elevator arrived at floor: 2

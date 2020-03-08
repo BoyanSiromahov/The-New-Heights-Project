@@ -58,8 +58,14 @@ public class EventHandler {
 		CallEvent c;
 		c = p.parseByteEvent(floorScheduler.receive(false));
 		try {
-			floorScheduler.send(floorScheduler.createReply(), FLOOR_PORT, false,
-                    InetAddress.getByName(p.systemAddresses.get(0)));
+		    if(p.systemAddresses.isEmpty()){
+                floorScheduler.send(floorScheduler.createReply(), FLOOR_PORT, false,
+                        InetAddress.getLocalHost());
+            }else{
+                floorScheduler.send(floorScheduler.createReply(), FLOOR_PORT, false,
+                        InetAddress.getByName(p.systemAddresses.get(0)));
+            }
+
 		} catch (IOException e) {
             e.printStackTrace();
 		}
@@ -75,8 +81,14 @@ public class EventHandler {
      */
 	public void sendElevatorRequest(CallEvent c, int portNum) throws UnknownHostException {
 		System.out.println("Sending Elevator Request");
-		elevatorScheduler.send(elevatorScheduler.createMessage(c), portNum, false,
-                InetAddress.getByName(p.systemAddresses.get(2)));
+        if(p.systemAddresses.isEmpty()) {
+            elevatorScheduler.send(elevatorScheduler.createMessage(c), portNum, false,
+                    InetAddress.getLocalHost());
+        }else {
+            elevatorScheduler.send(elevatorScheduler.createMessage(c), portNum, false,
+                    InetAddress.getByName(p.systemAddresses.get(2)));
+        }
+
 	}
 
     /**

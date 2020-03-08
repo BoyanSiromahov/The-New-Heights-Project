@@ -67,10 +67,7 @@ public class Elevator implements Runnable {
         elevatorParser.ipAddressReader();
 
         //The IP Address Of the Elevator is the Same
-        //System.out.println(InetAddress.getLocalHost());
         this.elevatorHelper = new UDPHelper(elevatorPort);
-        // byte[] request = "Configured".getBytes();
-        //elevatorHelper.send(request, ELEVATOR_SCHEDULER_PORT, false);
         initialiseDataSet();
     }
 
@@ -348,11 +345,22 @@ public class Elevator implements Runnable {
      */
     private synchronized void sendElevatorStatus(){
         try {
-            elevatorHelper.send(new byte[]{
-                    (byte) elevatorNumber, (byte) elevatorPort,
-                            (byte) getElevatorState().ordinal(), (byte) currentElevatorLevel, (byte) motor.ordinal()},
-                    ELEVATOR_SCHEDULER_PORT, true,
-                    InetAddress.getByName(elevatorParser.systemAddresses.get(1)));
+            if(elevatorParser.systemAddresses.isEmpty()){
+
+                elevatorHelper.send(new byte[]{
+                                (byte) elevatorNumber, (byte) elevatorPort,
+                                (byte) getElevatorState().ordinal(), (byte) currentElevatorLevel, (byte) motor.ordinal()},
+                        ELEVATOR_SCHEDULER_PORT, true, InetAddress.getLocalHost());
+
+            }else{
+                System.out.println("jbsauibsyasyu");
+                elevatorHelper.send(new byte[]{
+                                (byte) elevatorNumber, (byte) elevatorPort,
+                                (byte) getElevatorState().ordinal(), (byte) currentElevatorLevel, (byte) motor.ordinal()},
+                        ELEVATOR_SCHEDULER_PORT, true,
+                        InetAddress.getByName(elevatorParser.systemAddresses.get(1)));
+            }
+
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
@@ -368,14 +376,11 @@ public class Elevator implements Runnable {
         while (true) {
             sendElevatorStatus();
 
-            if (elevatorHelper.receive(false)[0] != 0) {
-                commandReceived.add(elevatorParser.parseByteEvent(elevatorHelper.receive(false)));
-                receiveAndCheckSchedulerRequest();
-                //TODO
-
-            }
+            commandReceived.add(elevatorParser.parseByteEvent(elevatorHelper.receive(false)));
+            receiveAndCheckSchedulerRequest();
         }
     }
+
     public static void main(String[] args)
 	{
         Thread elevatorThread_1, elevatorThread_2;

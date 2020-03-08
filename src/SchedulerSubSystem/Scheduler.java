@@ -89,24 +89,57 @@ public class Scheduler {
 	public synchronized void elevatorRequest() throws UnknownHostException {
 		CallEvent c = eventHandler.receiveFloorRequest();
 		eventQ.add(c);
+        int bestElevator = 0;
 
-		if(!elevators.isEmpty()){
-
-            for (Map.Entry<Integer, int[]> pair : elevators.entrySet()) {
-
-                if(pair.getValue()[1] == ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST.ordinal() &&
-                        pair.getValue()[3] == ElevatorMotor.STOP.ordinal()){
-                    System.out.println("Sending To Port: " + pair.getValue()[0]);
-                    eventHandler.sendElevatorRequest(eventQ.get(0), pair.getValue()[0]);
+        if(!elevators.isEmpty())
+        {
+            for (Map.Entry<Integer, int[]> pair : elevators.entrySet())
+            {
+                if(pair.getValue()[3] == ElevatorMotor.UPWARD.ordinal() && pair.getValue()[3] <=eventQ.get(0).getStartFloor())
+                {
+                    if(elevators.get(bestElevator)[3] - eventQ.get(0).getStartFloor() > pair.getValue()[3] - eventQ.get(0).getStartFloor())
+                    {
+                        bestElevator = pair.getValue()[0];
+                    }
+                }
+                else if(pair.getValue()[3] == ElevatorMotor.DOWNWARD.ordinal() && pair.getValue()[3] >=eventQ.get(0).getStartFloor())
+                {
+                    if(elevators.get(bestElevator)[3] - eventQ.get(0).getStartFloor() > pair.getValue()[3] - eventQ.get(0).getStartFloor())
+                    {
+                        bestElevator = pair.getValue()[0];
+                    }
+                }
+                else //DOWNWARD
+                {
+                    if(elevators.get(bestElevator)[3] - eventQ.get(0).getStartFloor() > pair.getValue()[3] - eventQ.get(0).getStartFloor())
+                    {
+                        bestElevator = pair.getValue()[0];
+                    }
                 }
             }
+            eventHandler.sendElevatorRequest(eventQ.get(0), elevators.get(bestElevator)[1]);
+            //eventQ.clear(); //Clear The Request After The Command Has Been Executed
         }
-        eventQ.clear(); //Clear The Request After The Command Has Been Executed
+//		if(!elevators.isEmpty()){
+//
+//            for (Map.Entry<Integer, int[]> pair : elevators.entrySet()) {
+//
+//                if(pair.getValue()[1] == ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST.ordinal() &&
+//                        pair.getValue()[3] == ElevatorMotor.STOP.ordinal()){
+//                    System.out.println("Sending To Port: " + pair.getValue()[0]);
+//                    eventHandler.sendElevatorRequest(eventQ.get(0), pair.getValue()[0]);
+//                }
+//            }
+//        }
+
 
 
 		ss = SchedulerState.E_REQUESTED;
 	}
 
+    /**
+     * Associated with the receiving thread that os dedicated to receiving the elevator statuses
+     */
 	public void elevatorStatus(){
 
         // [0] -> Elevator Number
@@ -157,7 +190,10 @@ public class Scheduler {
 		}
 		ss = SchedulerState.E_MOVING;
 	}
-	
+
+    /**
+     * State Change for the elevator
+     */
 	public synchronized void elevatorFinished() {
 		ss = SchedulerState.IDLE;
 	}
@@ -166,6 +202,8 @@ public class Scheduler {
 	public static void main(String[] args) throws UnknownHostException {
 
         Scheduler schedulerControl = new Scheduler();
+
+        //Thread 1 - Communication Link B/w Scheduler & Floor
         Thread floor_To_Scheduler = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -180,6 +218,7 @@ public class Scheduler {
         }, "Floor_Scheduler_Communication_Link");
         floor_To_Scheduler.start();
 
+        //Thread 2 - Communication Link B/w Scheduler & Elevator
         Thread scheduler_To_Elevator = new Thread(new Runnable() {
             @Override
             public void run() {
