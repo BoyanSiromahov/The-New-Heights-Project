@@ -22,7 +22,7 @@
    
 ### FloorSubSystem
 	Author: Samantha Tripp
-	
+	UDPHelper.java - The UDP Communication Helper Class
 	Floor.java - The Class represanting Floors of the building
 	    
 			
@@ -35,7 +35,7 @@
 ### Util
     Author: Shaun Gordon
     
-    UDPHelper.java - The UDP Communication Helper Class
+    
     Parser.java - The Class representing the Parser for the input command file (Input Processing Unit)
     
 ====================================================================
