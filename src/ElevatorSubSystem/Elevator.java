@@ -353,7 +353,6 @@ public class Elevator implements Runnable {
                         ELEVATOR_SCHEDULER_PORT, true, InetAddress.getLocalHost());
 
             }else{
-                System.out.println("jbsauibsyasyu");
                 elevatorHelper.send(new byte[]{
                                 (byte) elevatorNumber, (byte) elevatorPort,
                                 (byte) getElevatorState().ordinal(), (byte) currentElevatorLevel, (byte) motor.ordinal()},
