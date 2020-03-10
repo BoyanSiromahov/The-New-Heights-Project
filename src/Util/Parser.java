@@ -3,9 +3,9 @@ package Util;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -18,8 +18,9 @@ import ElevatorSubSystem.Direction;
  */
 public class Parser 
 {
-
-
+	private SimpleDateFormat standard = new SimpleDateFormat("HH:mm:ss"); // Hours/Minutes/seconds/milliseconds
+    public List<String> systemAddresses;
+	
 	/**
 	 * The function reads in the input data and processes it into a List to be sent
 	 * to the Floor Class
@@ -55,8 +56,7 @@ public class Parser
 		int endFloor = 0;
 		Direction direction = null;
 		Date date = null;
-
-		SimpleDateFormat standard = new SimpleDateFormat("HH:mm:ss"); // Hours/Minutes/seconds/milliseconds
+		
 
 		// Changing data to proper types
 		for (int i = 0; i < originaList.size(); i++) {
@@ -84,5 +84,64 @@ public class Parser
 		return newList;
 	}
 
+	/**
+	 * Parses byte array data received in a DatagramPacket to construct a CallEvent object.
+	 * 
+	 * @param b, The byte array message to decode.
+	 * @return CallEvent, The Parser object that is populated from the input data.
+	 * @throws ParseException 
+	 */
+	public CallEvent parseByteEvent(byte[] b) {
+		
+		//String s = "" + (b[0] & 0xff + b[1] & 0xff);
+		
+		CallEvent tempParser;
+		int startFloor = 0;
+		int endFloor = 0;
+		Direction direction = null;
+		Date date = null;
+		
+		String s = new String(b, 0, b.length);
+		System.out.println("Request received: " + s );
+		
+		// Parse string with delimiter
+		Scanner scanner = new Scanner(s);
+		scanner.useDelimiter(",");
+	
+		try {
+			// Find next string matching HH:mm:ss to create Date object
+			date = standard.parse((String) scanner.findInLine("[0-9]{2}:[0-9]{2}:[0-9]{2}"));
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		scanner.next();
+		startFloor = Integer.parseInt(scanner.next());
+		endFloor = Integer.parseInt(scanner.next());
+		direction = Direction.valueOf(scanner.next().trim());
+		scanner.close();
+		
+		tempParser = new CallEvent(date, startFloor, endFloor, direction);
+		
+		return tempParser;
+	}
 
+    /**
+     * The function reads in the input addresses from the user for the Floor, Scheduler and Elevator
+     * @return List, the processed IP Address file.
+     */
+    public void ipAddressReader() {
+
+        String file = String.format("ipAddress.txt");
+        systemAddresses = new ArrayList<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line = "";
+            while ((line = br.readLine()) != null) {
+                systemAddresses.add(line.split(",")[1]);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 }

@@ -5,7 +5,6 @@ import Util.Parser;
 
 import org.junit.*;
 import static org.junit.Assert.*;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,7 +19,7 @@ public class ParserTest {
 	@Before
 	public void setUp() throws Exception {
 		parserTest = new Parser();
-		elevatorEventsTest =  parserTest.makeList(parserTest.csvReader());
+		elevatorEventsTest =  parserTest.makeList(Parser.csvReader());
 	}
 
 	@Test

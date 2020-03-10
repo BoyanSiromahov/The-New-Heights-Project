@@ -1,16 +1,13 @@
 package Util;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+
 import java.util.Date;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import ElevatorSubSystem.Direction;
 
 /**
- * The CallEvent class contains information about the elevator events that will be read from the csv
+ * The CallEvent class contains information about the elevator events that will
+ * be read from the csv
+ * 
  * @author Shaun Gordon
  */
 public class CallEvent {
@@ -22,8 +19,7 @@ public class CallEvent {
 	/**
 	 * The Constructor of the class with default values
 	 */
-	public CallEvent(Date startTime, int startFloor, int endFloor, Direction direction) 
-	{
+	public CallEvent(Date startTime, int startFloor, int endFloor, Direction direction) {
 		this.startTime = startTime;
 		this.startFloor = startFloor;
 		this.endFloor = endFloor;
@@ -31,9 +27,9 @@ public class CallEvent {
 
 	}
 
-
 	/**
 	 * Getter Method for the Start Time
+	 * 
 	 * @return Date, The time at which the command is to be sent
 	 */
 	public Date getStartTime() {
@@ -42,6 +38,7 @@ public class CallEvent {
 
 	/**
 	 * Setter Method for the Start Time
+	 * 
 	 * @param startTime, The time at which the command is to be sent
 	 */
 	public void setStartTime(Date startTime) {
@@ -50,6 +47,7 @@ public class CallEvent {
 
 	/**
 	 * Getter Method for the request originated floor
+	 * 
 	 * @return startFloor, The requested floor
 	 */
 	public int getStartFloor() {
@@ -58,6 +56,7 @@ public class CallEvent {
 
 	/**
 	 * Setter Method for the Start Floor
+	 * 
 	 * @param startFloor, The floor from where the request originates
 	 */
 	public void setStartFloor(int startFloor) {
@@ -66,6 +65,7 @@ public class CallEvent {
 
 	/**
 	 * Getter Method for the destination floor
+	 * 
 	 * @return endFloor, The Destination Floor
 	 */
 	public int getEndFloor() {
@@ -74,6 +74,7 @@ public class CallEvent {
 
 	/**
 	 * Setter Method for the destination floor
+	 * 
 	 * @return endFloor, The requested destination
 	 */
 	public void setEndFloor(int endFloor) {
@@ -82,6 +83,7 @@ public class CallEvent {
 
 	/**
 	 * Getter Method for the Command Direction
+	 * 
 	 * @return direction, The requested direction
 	 */
 	public Direction getDirection() {
@@ -90,6 +92,7 @@ public class CallEvent {
 
 	/**
 	 * Setter Method for the Command Direction
+	 * 
 	 * @param direction, The requested direction
 	 */
 	public void setDirection(Direction direction) {
@@ -98,11 +101,12 @@ public class CallEvent {
 
 	/**
 	 * The method overrides the Object String method
+	 * 
 	 * @return String, The formatted string containing the Parser Object Data.
 	 */
 	@Override
 	public String toString() {
-		return "Floor Call event: Start floor, " + startFloor + " End floor, " + endFloor + " called using, "
-				+ direction + " at, " + startTime;
+
+		return startTime.toString() + "," + startFloor + "," + endFloor + "," + direction.toString();
 	}
 }

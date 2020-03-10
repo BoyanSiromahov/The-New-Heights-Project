@@ -1,5 +1,10 @@
 package SchedulerSubSystem;
 
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
+
 /**
  * The main class for the scheduler. This class is used as an middle man to 
  * receive and forward events from the Floor class and the Elevator class. It also
@@ -8,17 +13,25 @@ package SchedulerSubSystem;
  * @author Boyan Siromahov
  */
 
-import java.util.LinkedList;
-
+import ElevatorSubSystem.ElevatorMotor;
+import ElevatorSubSystem.ElevatorState;
 import Util.CallEvent;
 
-public class Scheduler implements Runnable {
-	int arrivedFloor = 0;
-
-	LinkedList<CallEvent> eventQ = new LinkedList<CallEvent>();
-	SchedulerState ss = SchedulerState.IDLE;
+public class Scheduler {
+	
+	
+	private int arrivedFloor;
+	private List<CallEvent> eventQ;
+	private Map<Integer, int[]> elevators;
+	private EventHandler eventHandler;
+	private SchedulerState ss;
 	
 	public Scheduler() {
+		arrivedFloor = 0;
+		eventQ = Collections.synchronizedList(new LinkedList<CallEvent>());
+		elevators = Collections.synchronizedMap(new HashMap<Integer, int[]>());
+		eventHandler = new EventHandler(this, eventQ);
+		ss = SchedulerState.IDLE;
 	}
 
 	/***
@@ -33,11 +46,11 @@ public class Scheduler implements Runnable {
 				e.printStackTrace();
 			}
 		}
-
 		notifyAll();
+		
 		ss = SchedulerState.E_MOVING;
-		System.out.println("Scheduler sending event to elevator:\n" + eventQ.peek());
-		return (CallEvent) eventQ.remove();
+		//System.out.println("Scheduler sending event to elevator:\n" + eventQ.peek());
+		return (CallEvent) eventQ.remove(0);
 	}
 
 	/***
@@ -72,15 +85,95 @@ public class Scheduler implements Runnable {
 	/***
 	 * This function is used to notify the scheduler to flip the boarded flag to
 	 * true which will then allow the elevator to move
-	 * 
-	 * @param p - the elevator request that is sent from the floor.
 	 */
-	public synchronized void elevatorRequest(CallEvent p) {
-		System.out.println("Request recieved");
+	public synchronized void elevatorRequest() throws UnknownHostException {
+	    // Associated Values
+        // [0] -> Elevator Port Number
+        // [1] -> The Current State of the Elevator
+        // [2] -> The Current Floor Level of the Elevator
+        // [3] -> The Current Direction of the Elevator Motor
+		CallEvent c = eventHandler.receiveFloorRequest();
+		eventQ.add(c);
+        int bestElevator = 1;
+
+        if(!elevators.isEmpty())
+        {
+            for (Map.Entry<Integer, int[]> pair : elevators.entrySet())
+            {
+                if(pair.getValue()[3] == ElevatorMotor.UPWARD.ordinal() && pair.getValue()[2] <=eventQ.get(0).getStartFloor())
+                {
+                    if(elevators.get(bestElevator)[2] - eventQ.get(0).getStartFloor() > pair.getValue()[2] - eventQ.get(0).getStartFloor())
+                    {
+                        bestElevator = pair.getKey();
+                    }
+                }
+                else if(pair.getValue()[3] == ElevatorMotor.DOWNWARD.ordinal() && pair.getValue()[2] >=eventQ.get(0).getStartFloor())
+                {
+                    if(elevators.get(bestElevator)[3] - eventQ.get(0).getStartFloor() >= pair.getValue()[2] - eventQ.get(0).getStartFloor())
+                    {
+                        bestElevator = pair.getKey();
+                    }
+                }
+                else //IDLE
+                {
+                    if(elevators.get(bestElevator)[2] - eventQ.get(0).getStartFloor() > pair.getValue()[2] - eventQ.get(0).getStartFloor())
+                    {
+                        bestElevator = pair.getKey();
+                    }
+                }
+            }
+
+            eventHandler.sendElevatorRequest(eventQ.get(0), elevators.get(bestElevator)[0]);
+            eventQ.clear(); //Clear The Request After The Command Has Been Executed
+
+        }
+//		if(!elevators.isEmpty()){
+//
+//            for (Map.Entry<Integer, int[]> pair : elevators.entrySet()) {
+//
+//                if(pair.getValue()[1] == ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST.ordinal() &&
+//                        pair.getValue()[3] == ElevatorMotor.STOP.ordinal()){
+//                    System.out.println("Sending To Port: " + pair.getValue()[0]);
+//                    eventHandler.sendElevatorRequest(eventQ.get(0), pair.getValue()[0]);
+//                }
+//            }
+//        }
+
+
+
 		ss = SchedulerState.E_REQUESTED;
-		eventQ.add(p);
-		notifyAll();
 	}
+
+    /**
+     * Associated with the receiving thread that os dedicated to receiving the elevator statuses
+     */
+	public void elevatorStatus(){
+
+        // [0] -> Elevator Number
+        // [1] -> Elevator Port Number
+	    // [2] -> The Current State of the Elevator
+        // [3] -> The Current Floor Level of the Elevator
+        // [4] -> The Current Direction of the Elevator Motor
+
+        byte[] elevatorStatus = eventHandler.receiveElevatorStatus();
+        
+
+        // Map with Elevator Number as a key and the array as value associated
+        elevators.put((int) elevatorStatus[0], new int[]{elevatorStatus[1],
+                elevatorStatus[2], elevatorStatus[3], elevatorStatus[4]});
+
+        //Send Wait Response After The Receiving The State Of The Elevator
+        if (eventQ.isEmpty() && elevatorStatus[2] == ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST.ordinal() &&
+                elevatorStatus[4] == ElevatorMotor.STOP.ordinal()){
+            //Reply With Response Of 0 Indicating Wait For Instructions
+
+            //eventHandler.replyToElevatorStatus(new byte[]{0}, elevatorStatus[1]);
+
+        }
+
+
+    }
+	
 
 	/***
 	 * This function is used to notify the scheduler to flip the boarded flag to
@@ -88,7 +181,6 @@ public class Scheduler implements Runnable {
 	 */
 	public synchronized void elevatorBoarded() {
 		ss = SchedulerState.E_BOARDED;
-		notifyAll();
 	}
 
 	/***
@@ -105,20 +197,45 @@ public class Scheduler implements Runnable {
 		}
 		ss = SchedulerState.E_MOVING;
 	}
-	
+
+    /**
+     * State Change for the elevator
+     */
 	public synchronized void elevatorFinished() {
 		ss = SchedulerState.IDLE;
 	}
 
-	/***
-	 * This is the main method that is implemented from the Runnable interface. This
-	 * method ensure that only one scheduler thread can process the request and
-	 * respond accordingly. (Ensure The Operation is Atomic)
-	 * 
-	 * Currently not in use, will be used in later iterations.
-	 */
-	@Override
-	public void run() {
+	
+	public static void main(String[] args) throws UnknownHostException {
+
+        Scheduler schedulerControl = new Scheduler();
+
+        //Thread 1 - Communication Link B/w Scheduler & Floor
+        Thread floor_To_Scheduler = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        schedulerControl.elevatorRequest();
+                    } catch (UnknownHostException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }, "Floor_Scheduler_Communication_Link");
+        floor_To_Scheduler.start();
+
+        //Thread 2 - Communication Link B/w Scheduler & Elevator
+        Thread scheduler_To_Elevator = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    schedulerControl.elevatorStatus();
+                }
+            }
+        }, "Scheduler_Elevator_Communication_Link");
+        scheduler_To_Elevator.start();
+
 	}
 
 }
