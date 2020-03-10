@@ -3,9 +3,11 @@ package Util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.*;
+import ElevatorSubSystem.ElevatorMotor;
+import ElevatorSubSystem.ElevatorState;
 
 /**
- * 
+ * The UDP Helper Class.
  * @author Samantha Tripp
  *
  */
@@ -15,36 +17,40 @@ public class UDPHelper {
 	private DatagramSocket socket;
 	private DatagramPacket sendPacket, receivePacket;
 	private int portNumber;
+	private InetAddress destinationHostAddress;
 	private byte[] data;
-	
+
+    /**
+     * The constructor of the UDP Helper class with the associated PORT Number
+     * @param portNumber
+     */
 	public UDPHelper(int portNumber) {
 		// Construct DatagramSocket and bind it to portNumber
 		this.portNumber = portNumber;
 		try {
 			socket = new DatagramSocket(portNumber);
-		} catch (SocketException se) {
-			// Error creating DatagramSocket
-			System.out.println("Error creating DatagramSocket:");
-			se.printStackTrace();
-			System.exit(1);
-		}
-	}
+		} catch (SocketException e) {
+            e.printStackTrace();
+        }
+    }
 
-	public void send(byte[] message, int destinationPort) {
-		
+    /**
+     * The UDP Send Packet command
+     * @param message, The associated message
+     * @param destinationPort, The destination selected port number
+     * @param elevatorStatus, the elevator status used to check the elevators 
+     * @param portAddress, The IP Address of destination
+     */
+	public void send(byte[] message, int destinationPort, boolean elevatorStatus, InetAddress portAddress) {
+
 		// Construct DataPacket to send message
-		try {
-			sendPacket = new DatagramPacket(message, message.length, InetAddress.getLocalHost(), destinationPort);
-		} catch (UnknownHostException e) {
-			System.out.println("Error constructing sendPacket:");
-			e.printStackTrace();
-			System.exit(1);
-		}
-				
-		// Print packet information
-		printUDPData(sendPacket, false);
-		
-				
+        sendPacket = new DatagramPacket(message, message.length, portAddress, destinationPort);
+
+        // Print packet information
+        if(!elevatorStatus){
+            printUDPData(sendPacket, false, false);
+        }
+
 		// Send the DatagramPacket 
 		try {
 			socket.send(sendPacket);
@@ -53,15 +59,24 @@ public class UDPHelper {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		System.out.println("Packet sent.\n");
+
+        if(!elevatorStatus){
+            System.out.println("Packet sent.\n");
+        }
+
 	}
-	
-	public byte[] receive() {
+
+    /**
+     * The UDP Helper To Receive The Packet From the Associated Socket
+     * @param printElevatorStatus, Flag used to minimise the (Suppress The Print Statements)
+     * @return The data that is received
+     */
+	public byte[] receive(boolean printElevatorStatus) {
 		
 		// Construct DatagramPacket to receive data
 		data = new byte[100];
 		receivePacket = new DatagramPacket(data, data.length);
-		
+		destinationHostAddress = receivePacket.getAddress();
 		// Block until a DatagramPacket response is received
 		try { 
 			System.out.println("UDP Handler: waiting for packet");
@@ -73,7 +88,7 @@ public class UDPHelper {
 			System.exit(1);
 		}
 		// Process the received DataPacket
-		printUDPData(receivePacket, true);
+		printUDPData(receivePacket, true, printElevatorStatus);
 		return data;
 	}
 	
@@ -83,20 +98,34 @@ public class UDPHelper {
 	 * @param packet, The DatagramPacket containing the data to print.
 	 * @param dataReceived, Indicator of an incoming (true) or outgoing (false) DatagramPacket.
 	 */
-	private void printUDPData(DatagramPacket packet, boolean dataReceived) {
+	private void printUDPData(DatagramPacket packet, boolean dataReceived, boolean elevatorStatus) {
 		if (dataReceived) { // Print statements for received DatagramPacket
-			System.out.println("Port " + portNumber + ": packet received");
+			System.out.println("Port " + portNumber + ": Packet received");
 			System.out.println("From host: " + packet.getAddress());
 			System.out.println("Host port: " + packet.getPort());
 		} else {
 			System.out.println("Port " + portNumber + ": sending packet");
 			System.out.println("To host: " + packet.getAddress());
 			System.out.println("Destination host port: " + packet.getPort());
-			
 		}
 		
 		System.out.print("Data as string: ");
-		System.out.println(bytesToString(packet.getData()));
+		if (!elevatorStatus) {
+			System.out.println(bytesToString(packet.getData()));
+		} else {
+			
+			//Print elevator status information
+			// [0] -> Elevator Number
+	        // [1] -> Elevator Port Number
+		    // [2] -> The Current State of the Elevator
+	        // [3] -> The Current Floor Level of the Elevator
+	        // [4] -> The Current Direction of the Elevator Motor
+			
+			System.out.println("\nElevator " + packet.getData()[0]);
+	        System.out.println("Current Elevator State: "+ ElevatorState.values()[packet.getData()[2]].toString());
+	        System.out.println("Current Elevator Floor: "+ packet.getData()[3]);
+	        System.out.println("Current Elevator Motor State: "+ ElevatorMotor.values()[packet.getData()[4]].toString() +'\n');
+		}
 		System.out.print("Data in bytes: ");
 		printBytes(packet.getData());
 		System.out.println();
@@ -106,7 +135,7 @@ public class UDPHelper {
 	 * Function to convert CallEvent objects to byte array messages for
 	 * use in constructing DatagramPackets.
 	 * 
-	 * @param floorEvent
+	 * @param floorEvent, The associated floor request
 	 */
 	public byte[] createMessage(CallEvent floorEvent) {
 		
@@ -136,8 +165,9 @@ public class UDPHelper {
 	}
 	
 	/**
+	 * Create a reply byte array confirming that a DatagramPacket was received.
 	 * 
-	 * @return
+	 * @return Byte array
 	 * @throws IOException
 	 */
 	public byte[] createReply() throws IOException {
@@ -162,8 +192,8 @@ public class UDPHelper {
 	 * Private method to decode byte array received in DatagramPacket to
 	 * a CallEvent object.
 	 * 
-	 * @param message
-	 * @return CallEvent
+	 * @param message, The byte array that is to be decoded
+	 * @return string, the decoded message
 	 */
 	public synchronized String decodeMessage(byte[] message) {
 		return bytesToString(message);
@@ -175,8 +205,8 @@ public class UDPHelper {
 	 * Parses the byte array so that it can show the first two bits (01, 02 or 03)
 	 * then formats a new string based off of the other bits.
 	 * 
-	 * @param b
-	 * @return
+	 * @param b, the byte array that is to be printed
+	 * @return s, the computed string from the decoded bytes
 	 */
 	public static String bytesToString(byte[] b) {
 		String s = "";
@@ -188,7 +218,7 @@ public class UDPHelper {
 	 * Helper method to print arrays of bytes.
 	 * Caps long strings to 80chars to make 100 byte arrays easier to read.
 	 * 
-	 * @param bytes
+	 * @param bytes, the bytes that need to be decoded
 	 */
 	public static void printBytes(byte[] bytes) {
 		String s = "";
@@ -212,6 +242,7 @@ public class UDPHelper {
 		}
 		System.out.println(s);
 	}
+
 
 	
 }

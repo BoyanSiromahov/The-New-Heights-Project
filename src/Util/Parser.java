@@ -19,7 +19,7 @@ import ElevatorSubSystem.Direction;
 public class Parser 
 {
 	private SimpleDateFormat standard = new SimpleDateFormat("HH:mm:ss"); // Hours/Minutes/seconds/milliseconds
-
+    public List<String> systemAddresses;
 	
 	/**
 	 * The function reads in the input data and processes it into a List to be sent
@@ -102,7 +102,7 @@ public class Parser
 		Date date = null;
 		
 		String s = new String(b, 0, b.length);
-		System.out.println("QWE recieved: " + s );
+		System.out.println("Request received: " + s );
 		
 		// Parse string with delimiter
 		Scanner scanner = new Scanner(s);
@@ -124,4 +124,24 @@ public class Parser
 		
 		return tempParser;
 	}
+
+    /**
+     * The function reads in the input addresses from the user for the Floor, Scheduler and Elevator
+     * @return List, the processed IP Address file.
+     */
+    public void ipAddressReader() {
+
+        String file = String.format("ipAddress.txt");
+        systemAddresses = new ArrayList<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line = "";
+            while ((line = br.readLine()) != null) {
+                systemAddresses.add(line.split(",")[1]);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 }

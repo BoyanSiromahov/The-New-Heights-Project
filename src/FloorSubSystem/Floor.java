@@ -2,6 +2,8 @@
 package FloorSubSystem;
 
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -22,6 +24,7 @@ public class Floor {
 
 	private LinkedList<Integer> eventQ;
 	private List<CallEvent> floorEvents;
+	private Parser parser;
 	private UDPHelper floorHelper;
 
 	private static final int FLOOR_PORT = 33;
@@ -30,11 +33,12 @@ public class Floor {
 	/**
 	 * The Floor object constructor. A Parser object is created that processes a CSV
 	 * file, and this data is transferred to the scheduler.
-	 * 
-	 * @param scheduler
+	 *
 	 * @param floorEvents
 	 */
 	public Floor(List<CallEvent> floorEvents) {
+	    parser = new Parser();
+	    parser.ipAddressReader();
 		this.eventQ = new LinkedList<Integer>();
 		this.floorEvents = floorEvents;
 		this.floorHelper = new UDPHelper(FLOOR_PORT);
@@ -46,7 +50,7 @@ public class Floor {
 	 * respond accordingly. (Ensure The Operation is Atomic)
 	 */
 
-	public void start(){
+	public void start() throws UnknownHostException {
 
 		long startTime = System.currentTimeMillis() / 1000;
 		long elapsedTime = 0L;
@@ -60,10 +64,17 @@ public class Floor {
 
 						System.out.println("Floor sending event to scheduler:\n" + floorEvents.get(i));
 						// Send floor event to scheduler
-						floorHelper.send(floorHelper.createMessage(floorEvents.get(i)), FLOOR_SCHEDULER_PORT);
+                        if(parser.systemAddresses.isEmpty()){
+                            floorHelper.send(floorHelper.createMessage(floorEvents.get(i)), FLOOR_SCHEDULER_PORT,
+                                    false, InetAddress.getLocalHost());
+                        }else {
+                            floorHelper.send(floorHelper.createMessage(floorEvents.get(i)), FLOOR_SCHEDULER_PORT,
+                                    false, InetAddress.getByName(parser.systemAddresses.get(1)));
+                        }
+
 						// Receive reply from scheduler
-						floorHelper.decodeMessage(floorHelper.receive());
-						// TODO error handling for received data
+						floorHelper.decodeMessage(floorHelper.receive(false));
+
 						
 						floorEvents.remove(i); // remove event from queue
 					}
@@ -96,7 +107,11 @@ public class Floor {
 		elevatorEvents = parser.makeList(csvData);
 		
 		Floor f = new Floor(elevatorEvents);
-		f.start();
+		try {
+			f.start();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
