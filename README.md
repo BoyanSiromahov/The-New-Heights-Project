@@ -8,9 +8,9 @@
     
     Elevator.java - The Class represanting elevator car
 		
-	ArrivalSensor.java - The Enum Class represanting the arrival sensor for the elevator 
+    ArrivalSensor.java - The Enum Class represanting the arrival sensor for the elevator 
 	
-	Direction.java - The Enum Class represanting the Direction for the elevator 
+    Direction.java - The Enum Class represanting the Direction for the elevator 
     	    
     ElevatorButton.java - The Enum Class represanting the floor buttons inside the elevator 
     
@@ -21,20 +21,22 @@
     State.java - The Class represanting different states of the System (STATE MACHINE) 
    
 ### FloorSubSystem
-	Author: Samantha Tripp
-	UDPHelper.java - The UDP Communication Helper Class
-	Floor.java - The Class represanting Floors of the building
+    Author: Samantha Tripp
+	
+    UDPHelper.java - The UDP Communication Helper Class
+	
+    Floor.java - The Class represanting Floors of the building
 	    
 			
 ### SchedulerSubSystem
     Author: Boyan Siromahov
     
     Scheduler.java - The Class representing the Scheduler (Communication Channel B/w Elevator and Floor)
+    
     EventHandler.java - The Helper Class For The Scheduler 
     
 ### Util
     Author: Shaun Gordon
-    
     
     Parser.java - The Class representing the Parser for the input command file (Input Processing Unit)
     
@@ -87,7 +89,7 @@ Responsibilities
 
 ## Reflection on Concurrency Control 
 Three separate programs are developed with floor, elevator and scheduler as separate programs. 
-Multithreaded approach i taken to ensure synchronous communication between the floor and the elevators 
+Multithreaded approach taken to ensure synchronous communication between the floor and the elevators 
 via scheduler. Scheduler is the main controller of the system with dedicated UDP ports and IP Addresses 
 to communicate between the systems. The Scheduler also coordinates the movement of elevators based on the 
 current floor and the requesting floor. The system's concurrency can be optimised with a fine-grained 
