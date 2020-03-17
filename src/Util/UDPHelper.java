@@ -122,9 +122,8 @@ public class UDPHelper {
 	        // [4] -> The Current Direction of the Elevator Motor
 			
 			System.out.println("\nElevator " + packet.getData()[0]);
-	        System.out.println("Current Elevator State: "+ ElevatorState.values()[packet.getData()[2]].toString());
+	        System.out.println("Current Elevator State: "+ packet.getData()[2]);
 	        System.out.println("Current Elevator Floor: "+ packet.getData()[3]);
-	        System.out.println("Current Elevator Motor State: "+ ElevatorMotor.values()[packet.getData()[4]].toString() +'\n');
 		}
 		System.out.print("Data in bytes: ");
 		printBytes(packet.getData());

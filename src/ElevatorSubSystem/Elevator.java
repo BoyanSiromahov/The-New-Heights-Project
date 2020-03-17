@@ -27,25 +27,30 @@ public class Elevator implements Runnable {
         LOGGER = Logger.getLogger(Elevator.class.getName());
     }
 
-    private static final int ELEVATOR_SCHEDULER_PORT = 30;
     private static final int DOOR_OPENING_CLOSING_DELAY = 2;
     private static final int ELEVATOR_MOVING_TIME = 4;
     private static final int GROUND_FLOOR = 1;
     private static final int TOTAL_FLOORS = 5;
-    
-    private ElevatorMotor motor;
-    private ElevatorDoor door;
+
     private int elevatorPort;
     private int elevatorNumber;
     private int currentElevatorLevel;
     private int elevatorElapsedTime;
-    private ElevatorState elevatorState;
+
+    // Elevator Associated Components States
+    private ElevatorMotor motor;
+    private ElevatorDoor door;
+    private ArrivalSensor elevatorArrivalSensor;
+    private ElevatorState subSystem; // Communication Control Class For Elevator
+
+    // Elevator Communicating With The Scheduler (Receives The Call Events)
+    private UDPHelper elevatorHelper;
+    // Call Event Queue That Is Received From The Scheduler
     private List<CallEvent> commandReceived;
-    private HashMap<Integer, Direction> floorsProcessingDelayed;
-    private HashMap<Integer, ArrivalSensor> elevatorArrivalSensor;
+
+    // Elevator Button Associated With Each Elevator (List Of All Floor Buttons)
     private HashMap<Integer, ElevatorButton> elevatorFloorButtons;
     private Parser elevatorParser;
-    private UDPHelper elevatorHelper;
 
     /**
      * The Constructor for the Elevator Class. Each elevator is assigned a unique
@@ -54,20 +59,18 @@ public class Elevator implements Runnable {
      * @param elevatorNumber,    The Unique Elevator Number
      * @param elevatorPortNum,   The Elevator Specified Port Number
      */
-    public Elevator(int elevatorNumber, int elevatorPortNum) throws UnknownHostException {
-        commandReceived = Collections.synchronizedList(new LinkedList<CallEvent>());
+    public Elevator(int elevatorNumber, int elevatorPortNum) {
+
         this.elevatorPort = elevatorPortNum;
         currentElevatorLevel = GROUND_FLOOR;
-        door = ElevatorDoor.OPEN;
-        motor = ElevatorMotor.STOP;
-        elevatorState = ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST;
         this.elevatorNumber = elevatorNumber;
-        commandReceived = new LinkedList<>();
-        elevatorParser = new Parser();
-        elevatorParser.ipAddressReader();
 
-        //The IP Address Of the Elevator is the Same
-        this.elevatorHelper = new UDPHelper(elevatorPort);
+        door = new ElevatorDoor(); // Initial State = Closed
+        motor = new ElevatorMotor(); // Initial State = Stop
+        elevatorArrivalSensor = new ArrivalSensor(); // Initial State = Not Reached Floor i.e. OFF
+        elevatorParser = new Parser();
+        elevatorHelper = new UDPHelper(elevatorPortNum);
+        subSystem = new ElevatorState(elevatorPortNum + 1, elevatorNumber);
         initialiseDataSet();
     }
 
@@ -79,21 +82,9 @@ public class Elevator implements Runnable {
         elevatorFloorButtons = new HashMap<Integer, ElevatorButton>() {
 			private static final long serialVersionUID = 1L;
         };
-        elevatorArrivalSensor = new HashMap<Integer, ArrivalSensor>() {
-			private static final long serialVersionUID = 1L;
-        };
         for (int i = GROUND_FLOOR; i < TOTAL_FLOORS; i++) {
             elevatorFloorButtons.put(i, ElevatorButton.OFF);
-            elevatorArrivalSensor.put(i, ArrivalSensor.NOT_REACHED_FLOOR);
         }
-    }
-
-    /**
-     * The method is used to return the Current State of the Elevator
-     * @return State, The Current State of the elevator
-     */
-    public ElevatorState getElevatorState(){
-        return this.elevatorState;
     }
 
     /**
@@ -111,30 +102,39 @@ public class Elevator implements Runnable {
     }
 
     /**
-     * To signal the door opening for the elevator using the Enum
+     *  The function is used to format the Log For The Elevator Movement
+     * @param time, The Elapsed Time That Is To Be Added On The Logger
+     * @return The Formatted Log String
      */
-    private void openElevatorDoor() {
+    private String formatLog(int time){
         DecimalFormat formatter = new DecimalFormat("00"); //This is used to keep track of the Time Format
-        elevatorState = ElevatorState.DOORS_OPENING;
-        door = ElevatorDoor.OPEN;
-        elevatorElapsedTime +=DOOR_OPENING_CLOSING_DELAY;
-        System.out.println(String.format("[TIME: 00:00:%s] [ELEVATOR] [INFO] Elevator %d Doors Opening\n",
-                formatter.format(elevatorElapsedTime), elevatorNumber));
-        elevatorDelay(DOOR_OPENING_CLOSING_DELAY);
+        return String.format("[TIME: 00:00:%s] [ELEVATOR] [INFO] Elevator %d ",
+                formatter.format(time), elevatorNumber); // Elevator Number Global Variable
     }
 
     /**
-     * To signal the door closure for the elevator using the Enum
+     * To signal the door opening/closing for the elevator
      */
-    private void closeElevatorDoor() {
-        DecimalFormat formatter = new DecimalFormat("00"); //This is used to keep track of the Time Format
-        elevatorState = ElevatorState.DOORS_CLOSING;
-        door = ElevatorDoor.CLOSE;
-        elevatorElapsedTime +=DOOR_OPENING_CLOSING_DELAY;
-        elevatorDelay(DOOR_OPENING_CLOSING_DELAY);
-        System.out.println(String.format("[TIME: 00:00:%s] [ELEVATOR] [INFO] Elevator %d Doors Closing",
-                formatter.format(elevatorElapsedTime), elevatorNumber));
+    private void signalElevatorDoor(String command) {
+
+        switch (command){
+            case "OPEN":
+                door.setElevatorDoor(true); // Close Door
+                elevatorElapsedTime +=DOOR_OPENING_CLOSING_DELAY; // Door Movement Delay
+                System.out.println(formatLog(elevatorElapsedTime) + "Doors Opening\n");
+                elevatorDelay(DOOR_OPENING_CLOSING_DELAY);
+                break;
+
+            case "CLOSE":
+                door.setElevatorDoor(true); // Close Door
+                elevatorElapsedTime +=DOOR_OPENING_CLOSING_DELAY; // Door Movement Delay
+                elevatorDelay(DOOR_OPENING_CLOSING_DELAY);
+                System.out.println(formatLog(elevatorElapsedTime) + "Doors Closing\n");
+                break;
+        }
+
     }
+
 
     /**
      * The Main Function that is used to control the movement of the elevator according the Scheduler Request.
@@ -147,102 +147,109 @@ public class Elevator implements Runnable {
     public boolean moveElevator(int destinationFloor, Direction elevatorDirection) {
         switch (elevatorDirection) {
             case DOWN:
-                if (door == ElevatorDoor.CLOSE) {
-                    if (motor == ElevatorMotor.STOP || motor == ElevatorMotor.DOWNWARD) {
-                        elevatorState = ElevatorState.ELEVATOR_MOVING; // Elevator State = MOVING
+                if (door.doorClosed()) {
+                    if (motor.movingDown() || motor.elevatorStopped()) {
+                        subSystem.setSystemStateChange("EM"); // Elevator State = MOVING
+
                         while (currentElevatorLevel >= GROUND_FLOOR && currentElevatorLevel > destinationFloor) {
                             elevatorElapsedTime +=ELEVATOR_MOVING_TIME;
                             elevatorDelay(ELEVATOR_MOVING_TIME);
-                            System.out.println(String.format("[TIME: 00:00:%d] [ELEVATOR] [INFO] Elevator " +
-                                            "%d Moving Down to " + "Floor Number: %d From: %d", elevatorElapsedTime,
-                                    elevatorNumber, destinationFloor, currentElevatorLevel));
+                            System.out.println(formatLog(elevatorElapsedTime) +
+                                    String.format("Moving Down to Floor Number: %d From: %d", destinationFloor,
+                                            currentElevatorLevel));
                             currentElevatorLevel--;
+                            subSystem.setCurrentFloor(currentElevatorLevel);
                         }
-                        motor = ElevatorMotor.DOWNWARD;
-                        System.out.println(String.format("[TIME: 00:00:%d] [ELEVATOR] [INFO] Elevator %d Has Reached Floor Number: %d",
-                                elevatorElapsedTime, elevatorNumber, currentElevatorLevel));
-                        elevatorArrivalSensor.replace(destinationFloor, ArrivalSensor.REACHED_FLOOR);
-                        motor = ElevatorMotor.STOP;
-                        openElevatorDoor();
+
+                        motor.setElevatorMovement("DOWN");
+                        System.out.println(formatLog(elevatorElapsedTime) +
+                                String.format("Has Reached Floor Number: %d", currentElevatorLevel));
+
+                        elevatorArrivalSensor.set_arrivalSensor(true);// Floor Reached
+
+                        motor.setElevatorMovement("STOP"); // Motor Stopped
+                        subSystem.setSystemStateChange("WI"); // Elevator Stopped-IDLE
+                        signalElevatorDoor("OPEN");
+
                         elevatorElapsedTime +=DOOR_OPENING_CLOSING_DELAY; //Off-Boarding Delay
-                        System.out.println(String.format("[TIME: 00:00:%d] [ELEVATOR] [INFO] Passengers Exiting Elevator %d",
-                                elevatorElapsedTime, elevatorNumber ));
-                        elevatorState = ElevatorState.ELEVATOR_STOPPED; // Elevator State = Stopped Reached Floor
 
-                        System.out.println(String.format("[TIME: 00:00:%d] [ELEVATOR] [INFO] Elevator arrived at floor: %d\n",
-                                elevatorElapsedTime, currentElevatorLevel));
+                        // E Stopped Reached Floor
+                        System.out.println(formatLog(elevatorElapsedTime) +
+                                String.format("arrived at floor: %d\n",currentElevatorLevel));
 
-                        elevatorState = ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST; // Elevator Waiting For Next Request
+                        System.out.println(formatLog(elevatorElapsedTime) + "Passengers Exiting");
+
                         return true;
+
+                        // TO DO Informing the Scheduler of the Elevator Current State
                     } else {
                         //Elevator Movement in a different direction
-                        System.out.println(String.format("[TIME: 00:00:%d] [ELEVATOR] [INFO] Elevator %d Not Moving " +
-                                "In The Requested Direction", elevatorElapsedTime, elevatorNumber));
-                        System.out.println(String.format("[TIME: 00:00:%d] [ELEVATOR] [INFO] Elevator %d Current Status: %s",
-                                elevatorElapsedTime, elevatorNumber, motor.toString()));
-                        addFloorToQueue(destinationFloor, elevatorDirection);
+                        System.err.println(formatLog(elevatorElapsedTime) +"Not Moving In The Requested Direction");
+                        System.err.println(formatLog(elevatorElapsedTime) + "Current Status: "+
+                                motor.getElevatorMovement().toString());
+                        //addFloorToQueue(destinationFloor, elevatorDirection);
 
-                        sendElevatorStatus();  // Informing the Scheduler of the Elevator Current State
+                        // TO DO Informing the Scheduler of the Elevator Current State
 
                         return false;
                     }
                 } else {
-                    //Elevator Currently Stopped at a Floor. Close Doors and initiate call back
-                    System.out.println(String.format("[TIME: 00:00:%d] [ELEVATOR] [INFO] Elevator %d Currently Stopped at floor %d",
-                            elevatorElapsedTime, elevatorNumber, currentElevatorLevel));
-                    closeElevatorDoor();
-                    moveElevator(destinationFloor,elevatorDirection);
+                    //Elevator Currently Stopped at a Floor.
+                    System.err.println(formatLog(elevatorElapsedTime) + "Currently At Floor " + currentElevatorLevel);
+                    return false;
+                    //closeElevatorDoor();
+                    //moveElevator(destinationFloor,elevatorDirection);
                 }
 
             case UP:
-                if (door == ElevatorDoor.CLOSE) {
-                    if (motor == ElevatorMotor.STOP || motor == ElevatorMotor.UPWARD) {
-                        elevatorState = ElevatorState.ELEVATOR_MOVING; // Elevator State = MOVING
+                if (door.doorClosed()) {
+                    if (motor.movingUp() || motor.elevatorStopped()) {
+                        subSystem.setSystemStateChange("EM"); // Elevator State = MOVING
+
                         while (currentElevatorLevel < TOTAL_FLOORS && currentElevatorLevel < destinationFloor) {
                             elevatorDelay(ELEVATOR_MOVING_TIME);
                             elevatorElapsedTime +=ELEVATOR_MOVING_TIME;
-                            System.out.println(String.format("[TIME: 00:00:%d] [ELEVATOR] [INFO] Elevator %d " +
-                                            "Moving UP To Floor Number: %d From: %d", elevatorElapsedTime,
-                                    elevatorNumber, destinationFloor, currentElevatorLevel));
+                            System.out.println(formatLog(elevatorElapsedTime) +
+                                    String.format("Moving UP To Floor Number: %d From: %d", destinationFloor,
+                                            currentElevatorLevel));
                             currentElevatorLevel++;
+                            subSystem.setCurrentFloor(currentElevatorLevel);
                         }
-                        motor = ElevatorMotor.UPWARD;
-                        System.out.println(String.format("[TIME: 00:00:%d] [ELEVATOR] [INFO] Elevator %d Has Reached " +
-                                "Floor Number: %d", elevatorElapsedTime, elevatorNumber, currentElevatorLevel));
-                        elevatorArrivalSensor.replace(destinationFloor, ArrivalSensor.REACHED_FLOOR);
-                        motor = ElevatorMotor.STOP;
-                        openElevatorDoor();
-                        elevatorElapsedTime +=DOOR_OPENING_CLOSING_DELAY; //Off-Boarding Delay
-                        System.out.println(String.format("[TIME: 00:00:%d] [ELEVATOR] [INFO] Passengers Exiting " +
-                                        "Elevator %d", elevatorElapsedTime, elevatorNumber ));
-                        elevatorState = ElevatorState.ELEVATOR_STOPPED; // Elevator State = Stopped Reached Floor
-                        System.out.println(String.format("[TIME: 00:00:%d] [ELEVATOR] [INFO] Elevator arrived at " +
-                                        "floor: %d\n", elevatorElapsedTime, currentElevatorLevel));
 
-                        elevatorState = ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST; // Elevator Waiting For Next Request
-                        sendElevatorStatus();  // Informing the Scheduler of the Elevator Current State
+                        motor.setElevatorMovement("UP"); // Motor Movement
+                        System.out.println(formatLog(elevatorElapsedTime) +
+                                String.format("Has Reached Floor Number: %d", currentElevatorLevel));
+
+                        elevatorArrivalSensor.set_arrivalSensor(true);// Floor Reached
+                        motor.setElevatorMovement("STOP"); // Motor Stopped
+                        subSystem.setSystemStateChange("WI"); // Elevator Stopped-IDLE
+                        signalElevatorDoor("OPEN"); // Open Door
+                        elevatorElapsedTime +=DOOR_OPENING_CLOSING_DELAY; //Off-Boarding Delay
+
+                        // Elevator Reached Floor
+                        System.out.println(formatLog(elevatorElapsedTime) +
+                                String.format("arrived at floor: %d\n",currentElevatorLevel));
+
+                        System.out.println(formatLog(elevatorElapsedTime) + "Passengers Exiting");
 
                         return true;
                     } else {
-                        // Elevator Movement in a different direction
-                        System.out.println(String.format("[TIME: 00:00:%d] [ELEVATOR] [INFO] Elevator %d Not Moving In "
-                                + "The Requested Direction", elevatorElapsedTime, elevatorNumber));
-                        System.out.println(String.format("[TIME: 00:00:%d] [ELEVATOR] [INFO] Elevator %d " +
-                                        "Current Status: %s", elevatorElapsedTime, elevatorNumber, motor.toString()));
-                        addFloorToQueue(destinationFloor, elevatorDirection);
+                        //Elevator Movement in a different direction
+                        System.err.println(formatLog(elevatorElapsedTime) +"Not Moving In The Requested Direction");
+                        System.err.println(formatLog(elevatorElapsedTime) + "Current Status: "+
+                                motor.getElevatorMovement().toString());
+
                         return false;
                     }
 
                 } else {
-                    //Elevator Currently Stopped at a Floor. Close Doors and initiate call back
-                    System.out.println(String.format("[TIME: 00:00:%d] [ELEVATOR] [INFO] Elevator %d Currently " +
-                            "Stopped at floor %d", elevatorElapsedTime, elevatorNumber, currentElevatorLevel));
-                    closeElevatorDoor();
-                    moveElevator(destinationFloor,elevatorDirection);
+                    //Elevator Currently Stopped at a Floor.
+                    System.err.println(formatLog(elevatorElapsedTime) + "Currently At Floor " + currentElevatorLevel);
+                    return false;
                 }
 
             default:
-                System.err.println(String.format("[ELEVATOR] [INFO] Invalid Movement Direction %s Specified",
+                LOGGER.warning(String.format("[ELEVATOR] [ERROR] Invalid Movement Direction %s Specified",
                         elevatorDirection.toString()));
                 return false;
         }
@@ -254,12 +261,12 @@ public class Elevator implements Runnable {
      *
      * @param requestedFloor,     The Destination Floor Number
      * @param requestedDirection, The Requested Direction
-     */
+     *
     private void addFloorToQueue(int requestedFloor, Direction requestedDirection) {
         floorsProcessingDelayed.put(requestedFloor, requestedDirection);
         elevatorFloorButtons.replace(requestedFloor, ElevatorButton.ON);
         elevatorArrivalSensor.replace(requestedFloor, ArrivalSensor.NOT_REACHED_FLOOR);
-    }
+    }*/
 
     /***
      * The Scheduler's received request is analyzed and processed and Movement logic is controlled accordingly
@@ -276,95 +283,78 @@ public class Elevator implements Runnable {
             CallEvent systemSchedulerCommand = commandReceived.remove(0);
 
             if (systemSchedulerCommand != null) {
+                // Extracting The Call Event Time From The Command
                 elevatorElapsedTime = Integer.parseInt(timeFormatter.format(systemSchedulerCommand.getStartTime()));
-                System.out.println(String.format("[TIME: 00:00:%s] [ELEVATOR] [INFO] Elevator %d Currently In Service "
-                        + "Receives Request", formatter.format(elevatorElapsedTime), elevatorNumber));
-                if (door == ElevatorDoor.OPEN &&
-                        (elevatorState == ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST ||
-                                elevatorState == ElevatorState.ELEVATOR_STOPPED)) {
+                System.out.println(formatLog(elevatorElapsedTime) + "Currently In Service ");
+                if (door.doorClosed() && subSystem.elevatorIdle()) {
+
+                    // UPWARDS
                     if (systemSchedulerCommand.getEndFloor() > currentElevatorLevel &&
                             systemSchedulerCommand.getEndFloor() <= TOTAL_FLOORS) {
+
+                        //OPEN Doors
+                        signalElevatorDoor("OPEN");
+
                         //MOVE UP
                         elevatorElapsedTime+=DOOR_OPENING_CLOSING_DELAY; //Adding Delay for Boarding
-                        System.out.println(String.format("[TIME: 00:00:%s] [ELEVATOR] [INFO] Elevator %d Boarding",
-                                formatter.format(elevatorElapsedTime), elevatorNumber));
+                        System.out.println(formatLog(elevatorElapsedTime) + "Boarding");
 
-                        sendElevatorStatus(); // Informing the Scheduler of the Elevator Current State
-
+                        signalElevatorDoor("CLOSE");
+                        // Changing The Elevator Button Flag
                         elevatorFloorButtons.replace(systemSchedulerCommand.getEndFloor(), ElevatorButton.ON);
-                        closeElevatorDoor();
+                        // sendElevatorStatus(); // Informing the Scheduler of the Elevator Current State TO DO
 
-                        sendElevatorStatus();  // Informing the Scheduler of the Elevator Current State
+                        // sendElevatorStatus();  // Informing the Scheduler of the Elevator Current State TO DO
 
                         requestSuccessful = moveElevator(systemSchedulerCommand.getEndFloor(),
                                 systemSchedulerCommand.getDirection());
+
+
                     } else if (systemSchedulerCommand.getEndFloor() < currentElevatorLevel &&
                             systemSchedulerCommand.getEndFloor() >= GROUND_FLOOR) {
+
                         // Case when the request start floor is below the current elevator level floor
                         while (currentElevatorLevel > systemSchedulerCommand.getStartFloor()){
                             elevatorDelay(ELEVATOR_MOVING_TIME);
                             elevatorElapsedTime +=ELEVATOR_MOVING_TIME;
-                            System.out.println(String.format("\n[TIME: 00:00:%s] [ELEVATOR] [INFO] Elevator Moving Down Towards The " +
-                                    "Request Originated Floor Level %d From Current Floor Level %d\n",
-                                    formatter.format(elevatorElapsedTime), systemSchedulerCommand.getStartFloor(),
+                            System.out.println(formatLog(elevatorElapsedTime) +
+                                    String.format("Moving Down Towards The Request Originated Floor Level %d From " +
+                                                    "Current Floor Level %d\n", systemSchedulerCommand.getStartFloor(),
                                     currentElevatorLevel));
                             currentElevatorLevel--;
+                            subSystem.setCurrentFloor(currentElevatorLevel);
                         }
+
+                        //OPEN Doors
+                        signalElevatorDoor("OPEN");
+
                         elevatorElapsedTime+=DOOR_OPENING_CLOSING_DELAY; //Adding Delay for Boarding
-                        System.out.println(String.format("[TIME: 00:00:%s] [ELEVATOR] [INFO] Elevator %d Boarding",
-                                formatter.format(elevatorElapsedTime), elevatorNumber));
+                        System.out.println(formatLog(elevatorElapsedTime) + "Boarding");
 
-                        sendElevatorStatus();  // Informing the Scheduler of the Elevator Current State
-                        
-                        // MOVE DOWNWARD
+                        // sendElevatorStatus();  // Informing the Scheduler of the Elevator Current State TO DO
+
+                        signalElevatorDoor("CLOSE");
+                        // Changing The Elevator Button Flag
                         elevatorFloorButtons.replace(systemSchedulerCommand.getEndFloor(), ElevatorButton.ON);
-                        closeElevatorDoor();
 
-                        sendElevatorStatus();  // Informing the Scheduler of the Elevator Current State
+                        // sendElevatorStatus();  // Informing the Scheduler of the Elevator Current State TO DO
 
                         requestSuccessful = moveElevator(systemSchedulerCommand.getEndFloor(),
                                 systemSchedulerCommand.getDirection());
+
                     } else {
-                        LOGGER.warning(String.format("Elevator %d Request for Floor %d Invalid", elevatorNumber,
-                                systemSchedulerCommand.getEndFloor()));
+                        LOGGER.warning(String.format("[ELEVATOR] [ERROR] Elevator %d Request for Floor %d Invalid",
+                                elevatorNumber, systemSchedulerCommand.getEndFloor()));
                     }
                 } else {
-                    System.out.println(String.format("[ELEVATOR] [INFO] Elevator %d Currently Moving", elevatorNumber));
-                    floorsProcessingDelayed.put(systemSchedulerCommand.getEndFloor(),
-                            systemSchedulerCommand.getDirection());
+                    LOGGER.warning(String.format("[ELEVATOR] [ERROR] Elevator %d Currently Moving", elevatorNumber));
                 }
-            } else {
-                LOGGER.warning("Elevator %d Received Invalid Request From Scheduler");
             }
         }
         return requestSuccessful;
     }
 
-    /**
-     * Is used to send the current status of the elevator to the Scheduler
-     */
-    private synchronized void sendElevatorStatus(){
-        try {
-            if(elevatorParser.systemAddresses.isEmpty()){
 
-                elevatorHelper.send(new byte[]{
-                                (byte) elevatorNumber, (byte) elevatorPort,
-                                (byte) getElevatorState().ordinal(), (byte) currentElevatorLevel, (byte) motor.ordinal()},
-                        ELEVATOR_SCHEDULER_PORT, true, InetAddress.getLocalHost());
-
-            }else{
-                System.out.println("jbsauibsyasyu");
-                elevatorHelper.send(new byte[]{
-                                (byte) elevatorNumber, (byte) elevatorPort,
-                                (byte) getElevatorState().ordinal(), (byte) currentElevatorLevel, (byte) motor.ordinal()},
-                        ELEVATOR_SCHEDULER_PORT, true,
-                        InetAddress.getByName(elevatorParser.systemAddresses.get(1)));
-            }
-
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-    }
     
     /***
      * This is the main method that is implemented from the Runnable interface. This
@@ -374,8 +364,6 @@ public class Elevator implements Runnable {
     @Override
     public void run() {
         while (true) {
-            sendElevatorStatus();
-
             commandReceived.add(elevatorParser.parseByteEvent(elevatorHelper.receive(false)));
             receiveAndCheckSchedulerRequest();
         }
@@ -384,16 +372,10 @@ public class Elevator implements Runnable {
     public static void main(String[] args)
 	{
         Thread elevatorThread_1, elevatorThread_2;
-        try {
-            elevatorThread_1 = new Thread(new Elevator(1,22),"Elevator NO.1");
-            elevatorThread_2 = new Thread(new Elevator(2,24),"Elevator NO.2");
-            elevatorThread_1.start();
-            elevatorThread_2.start();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-
-
+        elevatorThread_1 = new Thread(new Elevator(1,22),"Elevator NO.1");
+        elevatorThread_2 = new Thread(new Elevator(2,24),"Elevator NO.2");
+        elevatorThread_1.start();
+        elevatorThread_2.start();
 
     }
 }
