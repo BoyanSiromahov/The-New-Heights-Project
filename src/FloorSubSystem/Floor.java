@@ -38,7 +38,6 @@ public class Floor {
 	 */
 	public Floor(List<CallEvent> floorEvents) {
 	    parser = new Parser();
-	    parser.ipAddressReader();
 		this.eventQ = new LinkedList<Integer>();
 		this.floorEvents = floorEvents;
 		this.floorHelper = new UDPHelper(FLOOR_PORT);
@@ -64,13 +63,8 @@ public class Floor {
 
 						System.out.println("Floor sending event to scheduler:\n" + floorEvents.get(i));
 						// Send floor event to scheduler
-                        if(parser.systemAddresses.isEmpty()){
-                            floorHelper.send(floorHelper.createMessage(floorEvents.get(i)), FLOOR_SCHEDULER_PORT,
-                                    false, InetAddress.getLocalHost());
-                        }else {
-                            floorHelper.send(floorHelper.createMessage(floorEvents.get(i)), FLOOR_SCHEDULER_PORT,
-                                    false, InetAddress.getByName(parser.systemAddresses.get(1)));
-                        }
+						floorHelper.send(floorHelper.createMessage(floorEvents.get(i)), FLOOR_SCHEDULER_PORT,
+                                false, InetAddress.getLocalHost());
 
 						// Receive reply from scheduler
 						floorHelper.decodeMessage(floorHelper.receive(false));

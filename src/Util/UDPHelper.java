@@ -61,7 +61,7 @@ public class UDPHelper {
 		}
 
         if(!elevatorStatus){
-            System.out.println("Packet sent.\n");
+           // System.out.println("Packet sent.\n");
         }
 
 	}
@@ -100,18 +100,18 @@ public class UDPHelper {
 	 */
 	private void printUDPData(DatagramPacket packet, boolean dataReceived, boolean elevatorStatus) {
 		if (dataReceived) { // Print statements for received DatagramPacket
-			System.out.println("Port " + portNumber + ": Packet received");
-			System.out.println("From host: " + packet.getAddress());
-			System.out.println("Host port: " + packet.getPort());
+//			System.out.println("Port " + portNumber + ": Packet received");
+//			System.out.println("From host: " + packet.getAddress());
+//			System.out.println("Host port: " + packet.getPort());
 		} else {
-			System.out.println("Port " + portNumber + ": sending packet");
-			System.out.println("To host: " + packet.getAddress());
-			System.out.println("Destination host port: " + packet.getPort());
+//			System.out.println("Port " + portNumber + ": sending packet");
+//			System.out.println("To host: " + packet.getAddress());
+//			System.out.println("Destination host port: " + packet.getPort());
 		}
 		
-		System.out.print("Data as string: ");
+		//System.out.print("Data as string: ");
 		if (!elevatorStatus) {
-			System.out.println(bytesToString(packet.getData()));
+			//System.out.println(bytesToString(packet.getData()));
 		} else {
 			
 			//Print elevator status information
@@ -121,13 +121,13 @@ public class UDPHelper {
 	        // [3] -> The Current Floor Level of the Elevator
 	        // [4] -> The Current Direction of the Elevator Motor
 			
-			System.out.println("\nElevator " + packet.getData()[0]);
-	        System.out.println("Current Elevator State: "+ packet.getData()[2]);
-	        System.out.println("Current Elevator Floor: "+ packet.getData()[3]);
+		//	System.out.println("\nElevator " + packet.getData()[0]);
+	     //   System.out.println("Current Elevator Floor: "+ packet.getData()[3]);
+	    //    System.out.println("Current Elevator Motor State: "+ ElevatorMotor.values()[packet.getData()[4]].toString() +'\n');
 		}
-		System.out.print("Data in bytes: ");
-		printBytes(packet.getData());
-		System.out.println();
+	//System.out.print("Data in bytes: ");
+		//printBytes(packet.getData());
+		//System.out.println();
 	}
 	
 	/**
