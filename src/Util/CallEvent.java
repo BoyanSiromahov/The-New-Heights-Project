@@ -15,15 +15,17 @@ public class CallEvent {
 	private int startFloor;
 	private int endFloor;
 	private Direction direction;
+	private Faults fault;
 
 	/**
 	 * The Constructor of the class with default values
 	 */
-	public CallEvent(Date startTime, int startFloor, int endFloor, Direction direction) {
+	public CallEvent(Date startTime, int startFloor, int endFloor, Direction direction, Faults fault) {
 		this.startTime = startTime;
 		this.startFloor = startFloor;
 		this.endFloor = endFloor;
 		this.direction = direction;
+		this.fault = fault;
 
 	}
 
@@ -100,13 +102,33 @@ public class CallEvent {
 	}
 
 	/**
+	 * Getter Method for the Command Fault
+	 *
+	 * @return Fault, The System Fault
+	 */
+	public Faults getFault() {
+		return fault;
+	}
+
+	/**
+	 * Setter Method for the System Fault
+	 *
+	 * @param fault, The requested system fault
+	 */
+	public void setFault(Faults fault) {
+		this.fault = fault;
+	}
+
+	/**
 	 * The method overrides the Object String method
 	 * 
 	 * @return String, The formatted string containing the Parser Object Data.
 	 */
 	@Override
 	public String toString() {
-
+		if(startFloor == -1 || startFloor == -2){
+			return startTime.toString() + "," + startFloor + "," + endFloor + "," + fault.toString();
+		}
 		return startTime.toString() + "," + startFloor + "," + endFloor + "," + direction.toString();
 	}
 }

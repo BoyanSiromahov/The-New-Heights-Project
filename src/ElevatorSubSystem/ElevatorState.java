@@ -1,13 +1,9 @@
 package ElevatorSubSystem;
 
-import Util.CallEvent;
+import Util.Faults;
 import Util.UDPHelper;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * The STATE MACHINE Implementation done using the ElevatorState Enum Class. This Class Is Responsible For The
@@ -43,8 +39,8 @@ public class ElevatorState{
     //    private List<CallEvent> elevatorStatus;
 
 
-    public ElevatorState(int port, int number){
-        elevatorLevel = 0;
+    public ElevatorState(int port, int number, int floor){
+        elevatorLevel = floor;
         e_State = SystemState.IDLE; // Initial State
         //The IP Address Of the Elevator is the Same
         this.elevatorStateHelper = new UDPHelper(port);
@@ -56,7 +52,7 @@ public class ElevatorState{
      * The method is used to return the Current State of the Elevator
      * @return State, The Current State of the elevator
      */
-    public SystemState getElevatorSTate(){
+    public SystemState getElevatorState(){
         return this.e_State;
     }
 
@@ -71,12 +67,12 @@ public class ElevatorState{
 
             case "EM":
                 e_State = SystemState.MOVING;
-                sendElevatorStatus();
+                //sendElevatorStatus();
                 break;
 
-            case "EI":
+            case "WI":
                 e_State = SystemState.IDLE;
-                sendElevatorStatus();
+                //sendElevatorStatus();
                 break;
         }
     }
@@ -100,15 +96,50 @@ public class ElevatorState{
 
     /**
      * Is used to send the current status of the elevator to the Scheduler
+     *
+     *  Bit Mapping UDP Packet
+     *  [0] -> Elevator Port Number
+     *  [1] -> The Current State of the Elevator
+     *  [2] -> The Current Floor Level of the Elevator
+     *  [3] -> The Current Direction of the Elevator Motor
      */
-    public void sendElevatorStatus(){
+    public void sendElevatorStatus(MotorState motorDirection){
         try {
             elevatorStateHelper.send(new byte[]{
                             (byte) elevatorNumber, // Elevator Number
                             (byte) elevatorPort, // Dedicated Elevator Port
                             (byte) e_State.ordinal(), // 0 - Moving, 1 - IDLE
-                            (byte) elevatorLevel // The Current Floor Level Of The Elevator
+                            (byte) elevatorLevel, // The Current Floor Level Of The Elevator
+                            (byte) motorDirection.ordinal() // The Current Elevator Direction
                     }, ELEVATOR_SCHEDULER_PORT, true, InetAddress.getLocalHost());
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Is used to send the elevator fault status to the scheduler
+     * @param elevatorFault, The Detected System Fault
+     * @param faultFixed, Flag for fault fix (1 - Fault Fix / 0 - Fault Recovery Failed)
+     * @param faultTimeStamp, Time Stamp For Fault Detection & Handling
+     *
+     * Fault Bit Mapping UDP Packet
+     *      [0] -> Elevator Fault Flag
+     * 		[1] -> Elevator Number
+     * 		[2] -> The Current Status of the Elevator Fault
+     * 		[3] -> Fault Type
+     * 	    [4] -> Fault Time-Stamp
+     */
+    public void sendFaultStatus(Faults elevatorFault, int faultFixed, int faultTimeStamp){
+        try {
+            elevatorStateHelper.send(new byte[]{
+                    (byte) 11, // Fault Flag For Indicating Fault Packet
+                    (byte) elevatorNumber, // Elevator Number
+                    (byte) faultFixed, // 0 - Fault Not Fixed (Hard Fault), 1 - Fault Fixed (Soft Fault)
+                    (byte) elevatorFault.ordinal(), // Fixed Fault/Non-Recoverable Fault
+                    (byte) faultTimeStamp // Time-Stamp For Fault Handling
+            }, ELEVATOR_SCHEDULER_PORT+1, true, InetAddress.getLocalHost());
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }

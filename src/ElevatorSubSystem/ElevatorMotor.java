@@ -79,6 +79,14 @@ public class ElevatorMotor {
 	}
 
 	/**
+	 * Returns the current state ordinal for the elevator motor
+	 * @return int, Elevator Ordinal
+	 */
+	public int state(){
+		return (elevatorMovement.ordinal());
+	}
+
+	/**
 	 * Is Used To Check Whether The Elevator Is Moving Up or Not
 	 * @return False, if motor not moving Up
 	 */

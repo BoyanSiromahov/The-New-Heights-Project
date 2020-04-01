@@ -19,7 +19,7 @@ public class EventHandler {
 	private static final int ELEVATOR_SCHEDULER_PORT = 30;
 
 	private Scheduler scheduler;
-	private UDPHelper floorScheduler, elevatorScheduler;
+	private UDPHelper floorScheduler, elevatorScheduler, faultHandler;
 	private List<CallEvent> list;
 	private Parser p;
 
@@ -39,6 +39,9 @@ public class EventHandler {
 
             //UDPHelper to send/receive from elevator
             elevatorScheduler = new UDPHelper(ELEVATOR_SCHEDULER_PORT);
+
+            //UDPHelper For Handling Faults
+            faultHandler = new UDPHelper(ELEVATOR_SCHEDULER_PORT+1);
 
 
         } catch (UnknownHostException e) {
@@ -101,8 +104,12 @@ public class EventHandler {
         return status;
     }
 
-    public void replyToElevatorStatus(byte[] response, int elevatorPort) throws UnknownHostException {
-        elevatorScheduler.send(response, elevatorPort, false, InetAddress.getByName("192.168.56.1"));
+    /**
+     * Receives the Elevator Fault Status
+     * @return status, The fault details decoded status
+     */
+    public byte[] receiveElevatorFaultStatus() {
+        return faultHandler.receive(true);
     }
 
 }

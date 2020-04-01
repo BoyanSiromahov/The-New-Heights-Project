@@ -16,6 +16,7 @@ import java.util.*;
 import ElevatorSubSystem.ElevatorMotor;
 import ElevatorSubSystem.ElevatorState;
 import Util.CallEvent;
+import Util.Faults;
 
 public class Scheduler {
 	
@@ -25,8 +26,10 @@ public class Scheduler {
 	private Map<Integer, int[]> elevators;
 	private EventHandler eventHandler;
 	private SchedulerState ss;
+	private ElevatorMotor e_Motor;
 	
 	public Scheduler() {
+		e_Motor = new ElevatorMotor();
 		arrivedFloor = 0;
 		eventQ = Collections.synchronizedList(new LinkedList<CallEvent>());
 		elevators = Collections.synchronizedMap(new HashMap<Integer, int[]>());
@@ -100,14 +103,29 @@ public class Scheduler {
         {
             for (Map.Entry<Integer, int[]> pair : elevators.entrySet())
             {
-                if(pair.getValue()[3] == ElevatorMotor.UPWARD.ordinal() && pair.getValue()[2] <=eventQ.get(0).getStartFloor())
+            	if(eventQ.get(0).getStartFloor() < 0){
+            		// Send The Fault Command Randomly To Any Available Elevator
+					// TO DO (Handle Fault Based ON End Floor)
+					if(eventQ.get(0).getFault() == Faults.DOOR){
+						bestElevator = 2;
+					}else if(eventQ.get(0).getFault() == Faults.SENSOR){
+						bestElevator = 1;
+					}else if(eventQ.get(0).getFault() == Faults.ELEVATOR){
+						bestElevator = 2;
+					}
+				}
+                else if(pair.getValue()[3] == e_Motor.state() && pair.getValue()[2] <=eventQ.get(0).getStartFloor())
                 {
                     if(elevators.get(bestElevator)[2] - eventQ.get(0).getStartFloor() > pair.getValue()[2] - eventQ.get(0).getStartFloor())
                     {
                         bestElevator = pair.getKey();
                     }
+                    if(pair.getValue()[2] == eventQ.get(0).getStartFloor())
+					{
+						bestElevator = pair.getKey();
+					}
                 }
-                else if(pair.getValue()[3] == ElevatorMotor.DOWNWARD.ordinal() && pair.getValue()[2] >=eventQ.get(0).getStartFloor())
+                else if(pair.getValue()[3] == e_Motor.state() && pair.getValue()[2] >=eventQ.get(0).getStartFloor())
                 {
                     if(elevators.get(bestElevator)[3] - eventQ.get(0).getStartFloor() >= pair.getValue()[2] - eventQ.get(0).getStartFloor())
                     {
@@ -163,16 +181,71 @@ public class Scheduler {
                 elevatorStatus[2], elevatorStatus[3], elevatorStatus[4]});
 
         //Send Wait Response After The Receiving The State Of The Elevator
-        if (eventQ.isEmpty() && elevatorStatus[2] == ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST.ordinal() &&
-                elevatorStatus[4] == ElevatorMotor.STOP.ordinal()){
-            //Reply With Response Of 0 Indicating Wait For Instructions
-
-            //eventHandler.replyToElevatorStatus(new byte[]{0}, elevatorStatus[1]);
-
-        }
+//        if (eventQ.isEmpty() && elevatorStatus[2] == ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST.ordinal() &&
+//                elevatorStatus[4] == e_Motor.state()){
+//            //Reply With Response Of 0 Indicating Wait For Instructions
+//
+//            //eventHandler.replyToElevatorStatus(new byte[]{0}, elevatorStatus[1]);
+//
+//        }
 
 
     }
+
+	/**
+	 * Associated with the receiving thread that os dedicated to receiving the elevator Fault statuses
+	 */
+	public void handleElevatorFault(){
+
+     	//[0] -> Elevator Fault Flag
+		//[1] -> Elevator Number
+      	//[2] -> The Current Status of the Elevator Fault
+		//[3] -> Fault Type
+     	//[4] -> Fault Time-Stamp
+
+		byte[] elevatorFault = eventHandler.receiveElevatorFaultStatus();
+		if(elevatorFault[0] == 11){
+
+			if((int) elevatorFault[3] == Faults.SENSOR.ordinal() && elevatorFault[2] == 1){
+
+				System.out.println("\n\u001B[31m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [ELEVATOR-FAULT] " +
+						"Elevator %d Soft-Fault Detected: Elevator Arrival Sensor",
+						elevatorFault[4], elevatorFault[1]) + "\u001B[0m");
+				System.out.println("\u001B[92m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [FAULT RECOVERING] " +
+								"Elevator %d Attempting To Resolve Sensor Inactivity",
+						elevatorFault[4], elevatorFault[1]) + "\u001B[0m");
+
+				System.out.println("\u001B[92m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [SOFT-FAULT FIXED] " +
+								"Elevator %d Elevator Arrival Sensor Fixed, Resuming Task",
+						elevatorFault[4]+2, elevatorFault[1]) + "\u001B[0m" + "\n");
+
+			}else if((int) elevatorFault[3] == Faults.DOOR.ordinal() && elevatorFault[2] == 1){
+
+				System.out.println("\u001B[31m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [ELEVATOR-FAULT] " +
+								"Elevator %d Soft-Fault Detected: Elevator Doors Stuck",
+						elevatorFault[4], elevatorFault[1]) + "\u001B[0m");
+				System.out.println("\u001B[92m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [FAULT RECOVERING] " +
+								"Elevator %d Attempting To Re-Initiate Door Movement",
+						elevatorFault[4], elevatorFault[1]) + "\u001B[0m");
+				System.out.println("\u001B[92m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [SOFT-FAULT FIXED] " +
+								"Elevator %d Elevator Doors Functioning Properly, Resuming Task",
+						elevatorFault[4]+2, elevatorFault[1]) + "\u001B[0m" +"\n");
+
+			}else{
+
+				System.out.println("\n\033[1;31m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [CRITICAL-FAULT] " +
+								"Elevator %d Hard-Fault Detected: Elevator Stuck Between Floors",
+						elevatorFault[4], elevatorFault[1]) + "\u001B[0m");
+				System.out.println("\033[1;31m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [CRITICAL-FAULT] " +
+								"Elevator %d Non-Recoverable Fault", elevatorFault[4], elevatorFault[1]) + "\u001B[0m");
+				System.out.println("\033[1;31m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [CRITICAL-FAULT] " +
+								"Elevator %d Out Of Service", elevatorFault[4], elevatorFault[1]) + "\u001B[0m" +"\n");
+
+			}
+
+		}
+
+	}
 	
 
 	/***
@@ -235,6 +308,17 @@ public class Scheduler {
             }
         }, "Scheduler_Elevator_Communication_Link");
         scheduler_To_Elevator.start();
+
+		//Thread 3 - Communication Link B/w Scheduler & Elevator For Fault Handling
+		Thread scheduler_Elevator_Fault_Handler = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (true) {
+					schedulerControl.handleElevatorFault();
+				}
+			}
+		}, "scheduler_Elevator_Fault_Handler");
+		scheduler_Elevator_Fault_Handler.start();
 
 	}
 

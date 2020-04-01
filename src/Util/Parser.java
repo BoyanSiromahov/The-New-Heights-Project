@@ -55,6 +55,7 @@ public class Parser
 		int startFloor = 0;
 		int endFloor = 0;
 		Direction direction = null;
+		Faults fault = null;
 		Date date = null;
 		
 
@@ -75,10 +76,17 @@ public class Parser
 				} else if (j == 2) {
 					endFloor = Integer.parseInt(originaList.get(i)[j]);
 				} else if (j == 3) {
-					direction = Direction.valueOf(originaList.get(i)[j]);
+
+					// Possibility of specification of Fault/Direction
+					if(startFloor == -1 || startFloor == -2){
+						fault = Faults.valueOf(originaList.get(i)[j]);
+					}else {
+						direction = Direction.valueOf(originaList.get(i)[j]);
+					}
+
 				}
 			}
-			tempParser = new CallEvent(date, startFloor, endFloor, direction);
+			tempParser = new CallEvent(date, startFloor, endFloor, direction, fault);
 			newList.add(tempParser);
 		}
 		return newList;
@@ -99,6 +107,7 @@ public class Parser
 		int startFloor = 0;
 		int endFloor = 0;
 		Direction direction = null;
+		Faults systemFault = null;
 		Date date = null;
 		
 		String s = new String(b, 0, b.length);
@@ -117,10 +126,17 @@ public class Parser
 		scanner.next();
 		startFloor = Integer.parseInt(scanner.next());
 		endFloor = Integer.parseInt(scanner.next());
-		direction = Direction.valueOf(scanner.next().trim());
+
+		// Determining Faults Via The CSV File
+		if(startFloor == -1 || startFloor == -2){
+			systemFault = Faults.valueOf(scanner.next().trim());
+		}else{
+			direction = Direction.valueOf(scanner.next().trim());
+		}
+
 		scanner.close();
 		
-		tempParser = new CallEvent(date, startFloor, endFloor, direction);
+		tempParser = new CallEvent(date, startFloor, endFloor, direction, systemFault);
 		
 		return tempParser;
 	}
