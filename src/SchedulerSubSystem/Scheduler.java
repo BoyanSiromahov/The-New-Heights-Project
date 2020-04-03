@@ -1,9 +1,10 @@
 package SchedulerSubSystem;
 
-
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
+import ElevatorSubSystem.ElevatorMotor;
+import Util.CallEvent;
+import Util.Faults;
 
 /**
  * The main class for the scheduler. This class is used as an middle man to 
@@ -13,10 +14,6 @@ import java.util.*;
  * @author Boyan Siromahov
  */
 
-import ElevatorSubSystem.ElevatorMotor;
-import ElevatorSubSystem.ElevatorState;
-import Util.CallEvent;
-import Util.Faults;
 
 public class Scheduler {
 	
@@ -105,18 +102,22 @@ public class Scheduler {
             {
             	if(eventQ.get(0).getStartFloor() < 0){
             		// Send The Fault Command Randomly To Any Available Elevator
-					// TO DO (Handle Fault Based ON End Floor)
-					if(eventQ.get(0).getFault() == Faults.DOOR){
-						bestElevator = 2;
-					}else if(eventQ.get(0).getFault() == Faults.SENSOR){
-						bestElevator = 1;
-					}else if(eventQ.get(0).getFault() == Faults.ELEVATOR){
-						bestElevator = 2;
+					// Handle Based On The State of The Elevator on The Movement
+					if(eventQ.get(0).getFault() == Faults.DOOR && pair.getValue()[1] == 1){
+						bestElevator = (int) Math.ceil((((elevators.size() - 1) / (double) 2) + 1));
+
+					}else if(eventQ.get(0).getFault() == Faults.SENSOR && pair.getValue()[1] == 1){
+						bestElevator = (int) Math.floor((((elevators.size() - 1) / (double)2) + 1));
+
+					}else if(eventQ.get(0).getFault() == Faults.ELEVATOR && pair.getValue()[1] == 1){
+						bestElevator = (int) Math.ceil((((elevators.size() - 1) / (double) 2) + 1));
+
 					}
 				}
                 else if(pair.getValue()[3] == e_Motor.state() && pair.getValue()[2] <=eventQ.get(0).getStartFloor())
                 {
-                    if(elevators.get(bestElevator)[2] - eventQ.get(0).getStartFloor() > pair.getValue()[2] - eventQ.get(0).getStartFloor())
+                    if(elevators.get(bestElevator)[2] - eventQ.get(0).getStartFloor() >
+							pair.getValue()[2] - eventQ.get(0).getStartFloor())
                     {
                         bestElevator = pair.getKey();
                     }
@@ -127,14 +128,16 @@ public class Scheduler {
                 }
                 else if(pair.getValue()[3] == e_Motor.state() && pair.getValue()[2] >=eventQ.get(0).getStartFloor())
                 {
-                    if(elevators.get(bestElevator)[3] - eventQ.get(0).getStartFloor() >= pair.getValue()[2] - eventQ.get(0).getStartFloor())
+                    if(elevators.get(bestElevator)[3] - eventQ.get(0).getStartFloor() >=
+							pair.getValue()[2] - eventQ.get(0).getStartFloor())
                     {
                         bestElevator = pair.getKey();
                     }
                 }
                 else //IDLE
                 {
-                    if(elevators.get(bestElevator)[2] - eventQ.get(0).getStartFloor() > pair.getValue()[2] - eventQ.get(0).getStartFloor())
+                    if(elevators.get(bestElevator)[2] - eventQ.get(0).getStartFloor() >
+							pair.getValue()[2] - eventQ.get(0).getStartFloor())
                     {
                         bestElevator = pair.getKey();
                     }
@@ -145,19 +148,6 @@ public class Scheduler {
             eventQ.clear(); //Clear The Request After The Command Has Been Executed
 
         }
-//		if(!elevators.isEmpty()){
-//
-//            for (Map.Entry<Integer, int[]> pair : elevators.entrySet()) {
-//
-//                if(pair.getValue()[1] == ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST.ordinal() &&
-//                        pair.getValue()[3] == ElevatorMotor.STOP.ordinal()){
-//                    System.out.println("Sending To Port: " + pair.getValue()[0]);
-//                    eventHandler.sendElevatorRequest(eventQ.get(0), pair.getValue()[0]);
-//                }
-//            }
-//        }
-
-
 
 		ss = SchedulerState.E_REQUESTED;
 	}
@@ -180,16 +170,6 @@ public class Scheduler {
         elevators.put((int) elevatorStatus[0], new int[]{elevatorStatus[1],
                 elevatorStatus[2], elevatorStatus[3], elevatorStatus[4]});
 
-        //Send Wait Response After The Receiving The State Of The Elevator
-//        if (eventQ.isEmpty() && elevatorStatus[2] == ElevatorState.ELEVATOR_IDLE_WAITING_FOR_REQUEST.ordinal() &&
-//                elevatorStatus[4] == e_Motor.state()){
-//            //Reply With Response Of 0 Indicating Wait For Instructions
-//
-//            //eventHandler.replyToElevatorStatus(new byte[]{0}, elevatorStatus[1]);
-//
-//        }
-
-
     }
 
 	/**
@@ -202,6 +182,8 @@ public class Scheduler {
       	//[2] -> The Current Status of the Elevator Fault
 		//[3] -> Fault Type
      	//[4] -> Fault Time-Stamp
+		//[4] -> The Current Floor of The Elevator
+		//[5] -> The Floor Level
 
 		byte[] elevatorFault = eventHandler.receiveElevatorFaultStatus();
 		if(elevatorFault[0] == 11){
@@ -218,6 +200,9 @@ public class Scheduler {
 				System.out.println("\u001B[92m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [SOFT-FAULT FIXED] " +
 								"Elevator %d Elevator Arrival Sensor Fixed, Resuming Task",
 						elevatorFault[4]+2, elevatorFault[1]) + "\u001B[0m" + "\n");
+
+				System.out.println("\u001B[92m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [INFO] Elevator %d Has "+
+					"Arrived On Floor %d", elevatorFault[4]+2, elevatorFault[1], elevatorFault[5]) + "\u001B[0m"+"\n");
 
 			}else if((int) elevatorFault[3] == Faults.DOOR.ordinal() && elevatorFault[2] == 1){
 

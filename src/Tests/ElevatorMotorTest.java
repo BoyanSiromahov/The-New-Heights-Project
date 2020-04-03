@@ -1,8 +1,10 @@
 package Tests;
 
 import ElevatorSubSystem.ElevatorMotor;
-import static org.junit.Assert.*;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Elevator Motor JUnit Test Case
@@ -11,11 +13,49 @@ import org.junit.Test;
  */
 public class ElevatorMotorTest {
 
+	private ElevatorMotor testElevatorMovement = new ElevatorMotor();
+
 	@Test
-	public void enumStringTest() {
-		assertEquals("UPWARD", ElevatorMotor.UPWARD.toString());
-		assertEquals("DOWNWARD", ElevatorMotor.DOWNWARD.toString());
-		assertEquals("STOP", ElevatorMotor.STOP.toString());
+	public void testElevatorMotor(){
+		assertNotEquals("MOTOR_UP", testElevatorMovement.getElevatorMovement());
+		assertNotNull(testElevatorMovement.getElevatorMovement());
 	}
 
+	@Test
+	public void testMotorState() {
+		assertNotEquals("MOTOR_DOWN", testElevatorMovement.getElevatorMovement());
+		assertNotNull(testElevatorMovement.getElevatorMovement());
+	}
+
+	@Test
+	public void testSetElevatorMovement() {
+
+		assertNotEquals(false, testElevatorMovement.setElevatorMovement("UP"));
+		assertTrue(testElevatorMovement.setElevatorMovement("UP"));
+		assertNotNull(testElevatorMovement.getElevatorMovement());
+
+		assertNotEquals(false, testElevatorMovement.setElevatorMovement("DOWN"));
+		assertTrue(testElevatorMovement.setElevatorMovement("DOWN"));
+
+		assertNotEquals(false, testElevatorMovement.setElevatorMovement("STOP"));
+		assertTrue(testElevatorMovement.setElevatorMovement("STOP"));
+	}
+
+	@Test
+	public void testMovingDown() {
+		testElevatorMovement.setElevatorMovement("DOWN");
+		assertEquals(true, testElevatorMovement.movingDown());
+		assertNotEquals(false, testElevatorMovement.movingDown());
+		assertTrue(testElevatorMovement.movingDown());
+	}
+
+	@Test
+	public void testElevatorMotorStates(){
+
+		testElevatorMovement.setElevatorMovement("UP");
+		assertTrue(testElevatorMovement.movingUp());
+
+		testElevatorMovement.setElevatorMovement("STOP");
+		assertTrue(testElevatorMovement.elevatorStopped());
+	}
 }

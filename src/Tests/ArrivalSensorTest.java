@@ -11,11 +11,24 @@ import static org.junit.Assert.*;
  * @author Muneeb Nasir
  */
 public class ArrivalSensorTest {
+	private ArrivalSensor arrivalSensorTest = new ArrivalSensor();
 
 	@Test
-	public void enumStringTest() {
-		assertEquals("REACHED_FLOOR", ArrivalSensor.REACHED_FLOOR.toString());
-		assertEquals("NOT_REACHED_FLOOR", ArrivalSensor.NOT_REACHED_FLOOR.toString());
+	public void testArrivalSensor(){
+		assertNotEquals("REACHED_FLOOR", arrivalSensorTest.getSensor());
+		assertNotNull(arrivalSensorTest.getSensor());
+	}
+
+	@Test
+	public void testSetArrivalSensor() {
+		arrivalSensorTest.setArrivalSensor(true);
+		assertNotEquals("REACHED_FLOOR", arrivalSensorTest.getSensor());
+		assertNotNull(arrivalSensorTest.getSensor());
+
+		arrivalSensorTest.setArrivalSensor(false);
+		assertNotEquals("REACHED_FLOOR", arrivalSensorTest.getSensor());
+		assertNotEquals("NOT_REACHED_FLOOR", arrivalSensorTest.getSensor());
+		assertNotNull(arrivalSensorTest.getSensor());
 	}
 
 }

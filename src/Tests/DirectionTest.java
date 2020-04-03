@@ -15,6 +15,9 @@ public class DirectionTest {
 	public void enumStringTest() {
 		assertEquals("UP", Direction.UP.toString());
 		assertEquals("DOWN", Direction.DOWN.toString());
+		assertNotNull(Direction.UP.toString());
+		assertNotNull(Direction.DOWN.toString());
+
 	}
 
 }

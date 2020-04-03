@@ -15,6 +15,10 @@ public class ElevatorButtonTest {
 	public void enumStringTest() {
 		assertEquals("ON", ElevatorButton.ON.toString());
 		assertEquals("OFF", ElevatorButton.OFF.toString());
+		assertNotEquals("OFF", ElevatorButton.ON.toString());
+		assertNotEquals("UP", ElevatorButton.OFF.toString());
+		assertNotNull(ElevatorButton.ON.toString());
+		assertNotNull(ElevatorButton.OFF.toString());
 	}
 
 }

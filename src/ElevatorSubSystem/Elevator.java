@@ -183,7 +183,8 @@ public class Elevator implements Runnable {
                                 }catch (InterruptedException e){
                                     System.out.println("[TERMINATING] Hard Fault");
                                 }
-                                subSystem.sendFaultStatus(Faults.ELEVATOR, 0, elevatorElapsedTime);
+                                subSystem.sendFaultStatus(Faults.ELEVATOR, 0,
+                                        elevatorElapsedTime, currentElevatorLevel);
                                 return false;
                             }
 
@@ -197,7 +198,7 @@ public class Elevator implements Runnable {
                         System.out.println(formatLog(elevatorElapsedTime) +
                                 String.format("Has Reached Floor Number: %d", currentElevatorLevel));
 
-                        elevatorArrivalSensor.set_arrivalSensor(true);// Floor Reached
+                        elevatorArrivalSensor.setArrivalSensor(true);// Floor Reached
 
                         motor.setElevatorMovement("STOP"); // Motor Stopped
                         subSystem.setSystemStateChange("WI"); // Elevator Stopped-IDLE
@@ -254,7 +255,7 @@ public class Elevator implements Runnable {
                         System.out.println(formatLog(elevatorElapsedTime) +
                                 String.format("Has Reached Floor Number: %d", currentElevatorLevel));
 
-                        elevatorArrivalSensor.set_arrivalSensor(true);// Floor Reached
+                        elevatorArrivalSensor.setArrivalSensor(true);// Floor Reached
                         motor.setElevatorMovement("STOP"); // Motor Stopped
                         subSystem.setSystemStateChange("WI"); // Elevator Stopped-IDLE
 
@@ -392,7 +393,7 @@ public class Elevator implements Runnable {
                             System.out.println(ANSI_GREEN + formatLog(elevatorElapsedTime) +
                                     "Recovery Successfully Completed, Closing Doors\n" + ANSI_RESET);
                             subSystem.sendFaultStatus(systemSchedulerCommand.getFault(), 1,
-                                    elevatorElapsedTime);
+                                    elevatorElapsedTime, currentElevatorLevel);
                         }
                         // Arrival Sensor (FLOOR) Fault Handling
                         else if(systemSchedulerCommand.getFault() == Faults.SENSOR){
@@ -405,9 +406,9 @@ public class Elevator implements Runnable {
                             elevatorDelay(SOFT_FAULT_RECOVERY_TIME);
                             elevatorElapsedTime+=SOFT_FAULT_RECOVERY_TIME;
                             System.out.println(ANSI_GREEN + formatLog(elevatorElapsedTime) + "Sensor Reboot Complete" +
-                                    " Arrival Sensor Functionality Fixed\n" + ANSI_RESET);
+                                    " Arrival Sensor Functionality Fixed, Resuming Task\n" + ANSI_RESET);
                             subSystem.sendFaultStatus(systemSchedulerCommand.getFault(), 1,
-                                    elevatorElapsedTime);
+                                    elevatorElapsedTime, currentElevatorLevel);
                         }
 
                     }else if (systemSchedulerCommand.getDirection() == Direction.DOWN &&

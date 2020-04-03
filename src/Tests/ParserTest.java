@@ -30,13 +30,18 @@ public class ParserTest {
 	}
 
 	@Test
-	public void getStartFloor() {
+	public void testGetStartFloor() {
 		assertNotEquals(0, elevatorEventsTest.get(0).getStartFloor());
 	}
 
 	@Test
-	public void setEndFloor() {
+	public void testSetEndFloor() {
 		assertNotEquals(0, elevatorEventsTest.get(0).getEndFloor());
+	}
+
+	@Test
+	public void testGetFault() {
+		assertNotEquals(0, elevatorEventsTest.get(0).getFault());
 	}
 
 }

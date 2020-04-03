@@ -123,6 +123,7 @@ public class ElevatorState{
      * @param elevatorFault, The Detected System Fault
      * @param faultFixed, Flag for fault fix (1 - Fault Fix / 0 - Fault Recovery Failed)
      * @param faultTimeStamp, Time Stamp For Fault Detection & Handling
+     * @param level, The Floor Level at which the fault occurred & handled
      *
      * Fault Bit Mapping UDP Packet
      *      [0] -> Elevator Fault Flag
@@ -130,15 +131,17 @@ public class ElevatorState{
      * 		[2] -> The Current Status of the Elevator Fault
      * 		[3] -> Fault Type
      * 	    [4] -> Fault Time-Stamp
+     * 	    [5] -> Level at which Fault Fixed
      */
-    public void sendFaultStatus(Faults elevatorFault, int faultFixed, int faultTimeStamp){
+    public void sendFaultStatus(Faults elevatorFault, int faultFixed, int faultTimeStamp, int level){
         try {
             elevatorStateHelper.send(new byte[]{
                     (byte) 11, // Fault Flag For Indicating Fault Packet
                     (byte) elevatorNumber, // Elevator Number
                     (byte) faultFixed, // 0 - Fault Not Fixed (Hard Fault), 1 - Fault Fixed (Soft Fault)
                     (byte) elevatorFault.ordinal(), // Fixed Fault/Non-Recoverable Fault
-                    (byte) faultTimeStamp // Time-Stamp For Fault Handling
+                    (byte) faultTimeStamp, // Time-Stamp For Fault Handling
+                    (byte) level // Elevator Level At Which Fault is Handled
             }, ELEVATOR_SCHEDULER_PORT+1, true, InetAddress.getLocalHost());
         } catch (UnknownHostException e) {
             e.printStackTrace();

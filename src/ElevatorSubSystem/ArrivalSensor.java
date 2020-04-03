@@ -43,7 +43,7 @@ public class ArrivalSensor {
 	 * @return True, If the sensor state is changed
 	 *
 	 */
-	public boolean set_arrivalSensor(boolean reached){
+	public boolean setArrivalSensor(boolean reached){
 
 		if(reached){
 			sensor = SensorState.REACHED_FLOOR;
