@@ -1,6 +1,6 @@
 # The-New-Heights-Project
 
-## Elevator Simulation System: Iteration 3
+## Elevator Simulation System: Final Iteration
 
 
 ### ElevatorSubSystem
@@ -45,8 +45,8 @@
 Responsibilities
 
     1. Boyan Siromahov - SchedulerSubSystem - UDP Communication Development 
-    2. Shaun Gordon - SchedulerSubSystem & ElevatorSubSystem - Multi-Elevator System Development
-    3. Muneeb Nasur - SchedulerSubSystem & ElevatorSubSystem - Multi-Elevator System Development - Unit Tests
+    2. Shaun Gordon - SchedulerSubSystem & ElevatorSubSystem 
+    3. Muneeb Nasir - SchedulerSubSystem & ElevatorSubSystem - Fault Handling - Unit Tests
     4. Samantha Tripp - UDP Communication Development 
     5. Britney Baker - UML Diagrams
     

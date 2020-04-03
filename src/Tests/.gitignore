@@ -8,3 +8,6 @@
 /ParserTest.class
 /StateTest.class
 /TestAll.class
+/CallEventTest.class
+/FaultTest.class
+/SchedulerStateTest.class

@@ -26,9 +26,6 @@ public class Elevator implements Runnable {
         LOGGER = Logger.getLogger(Elevator.class.getName());
     }
 
-    public static final String ANSI_RESET = "\u001B[0m"; // RESET After Change
-    public static final String ANSI_GREEN = "\u001B[92m"; // For Differentiating Recovery
-
     private static final int DOOR_OPENING_CLOSING_DELAY = 2;
     private static final int ELEVATOR_MOVING_TIME = 4;
     private static final int SOFT_FAULT_RECOVERY_TIME = 2;
@@ -167,16 +164,22 @@ public class Elevator implements Runnable {
 
                             // HARD-FAULT HANDLING
                             if(hardFault){
+                                System.err.println("\n"+formatLog(elevatorElapsedTime) +
+                                        String.format("Moving Down to Floor Number: %d From: %d", destinationFloor,
+                                                currentElevatorLevel));
                                 DecimalFormat formatter = new DecimalFormat("00");
-                                System.err.println(String.format("\n[TIME: 00:00:%s] [ELEVATOR] [ERROR] Elevator %d "+
+                                System.err.println(String.format("[TIME: 00:00:%s] [ELEVATOR] [ERROR] Elevator %d "+
                                         "Stuck Between Floors %d and %d", formatter.format(elevatorElapsedTime),
                                         elevatorNumber, currentElevatorLevel, currentElevatorLevel-1));
-                                System.err.println("\033[1;31m" + String.format("[TIME: 00:00:%s] [ELEVATOR] [ERROR] ",
+                                System.err.println(String.format("[TIME: 00:00:%s] [ELEVATOR] [ERROR] Elevator %d "+
+                                        "HARD-Fault Detected: Non-recoverable Fault", formatter.format(elevatorElapsedTime),
+                                        elevatorNumber));
+                                System.err.println( String.format("[TIME: 00:00:%s] [ELEVATOR] [ERROR] ",
                                         formatter.format(elevatorElapsedTime)) +Thread.currentThread().getName() +
-                                        " Service Terminated" + ANSI_RESET);
-                                System.err.println("\033[1;31m" + String.format("[TIME: 00:00:%s] [ELEVATOR] [ERROR] ",
+                                        " Service Terminated" );
+                                System.err.println( String.format("[TIME: 00:00:%s] [ELEVATOR] [ERROR] ",
                                         formatter.format(elevatorElapsedTime)) +Thread.currentThread().getName() +
-                                        " Non-Operational\n" + ANSI_RESET);
+                                        " Non-Operational\n" );
                                 try {
                                     Thread.sleep((long) 10000);
                                     Thread.currentThread().interrupt();
@@ -385,28 +388,28 @@ public class Elevator implements Runnable {
                                     "SOFT Fault Detected: Doors Not Closing After Passenger Exit",
                                     formatter.format(elevatorElapsedTime), elevatorNumber));
                             System.err.println(String.format("[TIME: 00:00:%s] [ELEVATOR DOORS] [RECOVERY] Elevator %d "
-                                    + "Initiating Recovery Sequence",
+                                    + "Initiating Doors Recovery Sequence",
                                     formatter.format(elevatorElapsedTime), elevatorNumber));
 
                             elevatorDelay(SOFT_FAULT_RECOVERY_TIME);
                             elevatorElapsedTime+=SOFT_FAULT_RECOVERY_TIME;
-                            System.out.println(ANSI_GREEN + formatLog(elevatorElapsedTime) +
-                                    "Recovery Successfully Completed, Closing Doors\n" + ANSI_RESET);
+                            System.err.println(formatLog(elevatorElapsedTime) +
+                                    "Doors Recovery Successfully Completed, Closing Doors\n" );
                             subSystem.sendFaultStatus(systemSchedulerCommand.getFault(), 1,
                                     elevatorElapsedTime, currentElevatorLevel);
                         }
                         // Arrival Sensor (FLOOR) Fault Handling
                         else if(systemSchedulerCommand.getFault() == Faults.SENSOR){
                             System.err.println(String.format("\n[TIME: 00:00:%s] [ELEVATOR] [FAULT] Elevator %d " +
-                                    "SOFT Fault Detected: Elevator Arrival Sensor Inactive On Arrival\n" +
-                                    "[TIME: 00:00:%s] [ELEVATOR SENSOR] [RECOVERY] Rebooting Senor",
+                                    "SOFT Fault Detected: Elevator Arrival Sensor Stuck On Arrival\n" +
+                                    "[TIME: 00:00:%s] [ELEVATOR SENSOR] [RECOVERY] Rebooting & Fixing Senor",
                                     formatter.format(elevatorElapsedTime), elevatorNumber,
                                     formatter.format(elevatorElapsedTime)));
 
                             elevatorDelay(SOFT_FAULT_RECOVERY_TIME);
                             elevatorElapsedTime+=SOFT_FAULT_RECOVERY_TIME;
-                            System.out.println(ANSI_GREEN + formatLog(elevatorElapsedTime) + "Sensor Reboot Complete" +
-                                    " Arrival Sensor Functionality Fixed, Resuming Task\n" + ANSI_RESET);
+                            System.err.println(formatLog(elevatorElapsedTime) + "Sensor Reboot Complete:" +
+                                    " Arrival Sensor Fixed, Resuming Task\n" );
                             subSystem.sendFaultStatus(systemSchedulerCommand.getFault(), 1,
                                     elevatorElapsedTime, currentElevatorLevel);
                         }

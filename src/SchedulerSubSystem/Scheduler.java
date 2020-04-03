@@ -173,7 +173,8 @@ public class Scheduler {
     }
 
 	/**
-	 * Associated with the receiving thread that os dedicated to receiving the elevator Fault statuses
+	 * Associated with the receiving thread that os dedicated to receiving the elevator Fault statuses.
+	 * The fault packet is received and handled accordingly
 	 */
 	public void handleElevatorFault(){
 
@@ -190,41 +191,44 @@ public class Scheduler {
 
 			if((int) elevatorFault[3] == Faults.SENSOR.ordinal() && elevatorFault[2] == 1){
 
-				System.out.println("\n\u001B[31m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [ELEVATOR-FAULT] " +
+				System.err.println("\n" + String.format("[TIME: 00:00:%d] [SCHEDULER] [ELEVATOR-FAULT] " +
 						"Elevator %d Soft-Fault Detected: Elevator Arrival Sensor",
-						elevatorFault[4], elevatorFault[1]) + "\u001B[0m");
-				System.out.println("\u001B[92m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [FAULT RECOVERING] " +
-								"Elevator %d Attempting To Resolve Sensor Inactivity",
-						elevatorFault[4], elevatorFault[1]) + "\u001B[0m");
+						elevatorFault[4], elevatorFault[1]));
+				System.err.println(String.format("[TIME: 00:00:%d] [SCHEDULER] [FAULT RECOVERING] " +
+								"Elevator %d Attempting To Resolve Arrival Sensor fault",
+						elevatorFault[4], elevatorFault[1]));
 
-				System.out.println("\u001B[92m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [SOFT-FAULT FIXED] " +
+				System.err.println(String.format("[TIME: 00:00:%d] [SCHEDULER] [SOFT-FAULT FIXED] " +
 								"Elevator %d Elevator Arrival Sensor Fixed, Resuming Task",
-						elevatorFault[4]+2, elevatorFault[1]) + "\u001B[0m" + "\n");
-
-				System.out.println("\u001B[92m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [INFO] Elevator %d Has "+
-					"Arrived On Floor %d", elevatorFault[4]+2, elevatorFault[1], elevatorFault[5]) + "\u001B[0m"+"\n");
+						elevatorFault[4]+2, elevatorFault[1]) + "\n");
 
 			}else if((int) elevatorFault[3] == Faults.DOOR.ordinal() && elevatorFault[2] == 1){
 
-				System.out.println("\u001B[31m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [ELEVATOR-FAULT] " +
+				System.err.println(String.format("[TIME: 00:00:%d] [SCHEDULER] [ELEVATOR-FAULT] " +
 								"Elevator %d Soft-Fault Detected: Elevator Doors Stuck",
-						elevatorFault[4], elevatorFault[1]) + "\u001B[0m");
-				System.out.println("\u001B[92m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [FAULT RECOVERING] " +
+						elevatorFault[4], elevatorFault[1]) );
+				System.err.println(String.format("[TIME: 00:00:%d] [SCHEDULER] [FAULT RECOVERING] " +
 								"Elevator %d Attempting To Re-Initiate Door Movement",
-						elevatorFault[4], elevatorFault[1]) + "\u001B[0m");
-				System.out.println("\u001B[92m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [SOFT-FAULT FIXED] " +
+						elevatorFault[4], elevatorFault[1]) );
+				System.err.println(String.format("[TIME: 00:00:%d] [SCHEDULER] [SOFT-FAULT FIXED] " +
 								"Elevator %d Elevator Doors Functioning Properly, Resuming Task",
-						elevatorFault[4]+2, elevatorFault[1]) + "\u001B[0m" +"\n");
+						elevatorFault[4]+2, elevatorFault[1])  +"\n");
 
 			}else{
 
-				System.out.println("\n\033[1;31m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [CRITICAL-FAULT] " +
+				System.err.println("\n" + String.format("[TIME: 00:00:%d] [SCHEDULER] [CRITICAL-FAULT] " +
 								"Elevator %d Hard-Fault Detected: Elevator Stuck Between Floors",
-						elevatorFault[4], elevatorFault[1]) + "\u001B[0m");
-				System.out.println("\033[1;31m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [CRITICAL-FAULT] " +
-								"Elevator %d Non-Recoverable Fault", elevatorFault[4], elevatorFault[1]) + "\u001B[0m");
-				System.out.println("\033[1;31m" + String.format("[TIME: 00:00:%d] [SCHEDULER] [CRITICAL-FAULT] " +
-								"Elevator %d Out Of Service", elevatorFault[4], elevatorFault[1]) + "\u001B[0m" +"\n");
+						elevatorFault[4], elevatorFault[1]) );
+				System.err.println(String.format("[TIME: 00:00:%d] [SCHEDULER] [CRITICAL-FAULT] " +
+								"Elevator %d Non-Recoverable Fault", elevatorFault[4], elevatorFault[1]) );
+				System.err.println(String.format("[TIME: 00:00:%d] [SCHEDULER] [CRITICAL-FAULT] " +
+								"Elevator %d Out Of Service", elevatorFault[4], elevatorFault[1])  +"\n");
+
+				// Removing the Non-Operation Elevator From The Available Elevators List-Map
+				elevators.remove((int) elevatorFault[1]);
+				System.err.println(String.format("[TIME: 00:00:%d] [SCHEDULER] [INFO] " +
+								"Remaining Available Operational Elevator is Elevator Number: %d ",
+						elevatorFault[4]+1, elevators.size())  +"\n");
 
 			}
 

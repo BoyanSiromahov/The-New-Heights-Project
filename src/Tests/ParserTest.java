@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 import java.util.List;
 
 /**
- * Floor Class JUnit Test Case
+ * Parser Class JUnit Test Case
  * 
  * @author Muneeb Nasir
  */
