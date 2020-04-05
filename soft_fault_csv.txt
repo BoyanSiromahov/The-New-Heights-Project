@@ -1,0 +1,2 @@
+Time, 	Start Floor, End Floor, Button
+00:00:05,-1,3,SENSOR
