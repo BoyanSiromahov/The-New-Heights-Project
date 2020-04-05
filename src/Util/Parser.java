@@ -48,7 +48,7 @@ public class Parser
      * to the Floor Class
      * @return List, the processed csv file data.
      */
-    public static List<String[]> softFaultReader() {
+    public static List<String[]> faultReader() {
 
         String file = String.format("soft_fault_csv.txt");
         List<String[]> content = new ArrayList<>();
@@ -65,27 +65,7 @@ public class Parser
         return content;
     }
 
-    /**
-     * The function reads in the test data and processes it into a List to be sent
-     * to the Floor Class
-     * @return List, the processed csv file data.
-     */
-    public static List<String[]> hardFaultReader() {
 
-        String file = String.format("hard_fault_csv.txt");
-        List<String[]> content = new ArrayList<>();
-
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line = "";
-            while ((line = br.readLine()) != null) {
-                content.add(line.split(","));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        content.remove(0); // Deletes title.
-        return content;
-    }
 
     /**
      * The main function that further process the input parsed data in Floor class compatible
