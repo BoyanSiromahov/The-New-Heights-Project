@@ -11,3 +11,10 @@
 /CallEventTest.class
 /FaultTest.class
 /SchedulerStateTest.class
+/ElevatorFaultTest.class
+/FloorFaultTest.class
+/SchedulerFaultTest$1.class
+/SchedulerFaultTest$2.class
+/SchedulerFaultTest$3.class
+/SchedulerFaultTest.class
+*.class

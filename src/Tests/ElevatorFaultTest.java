@@ -1,8 +1,10 @@
 package Tests;
 
 import ElevatorSubSystem.Elevator;
+
 /**
- * ElevatorFaultTest
+ * ElevatorFaultTest (TestCase Dedicated For Faults)
+ *
  * @author Britney Baker
  * @author Samantha Tripp
  */
@@ -17,4 +19,5 @@ public class ElevatorFaultTest {
         elevatorThread_2.start();
 
     }
+
 }

@@ -14,18 +14,27 @@ public class ElevatorDoorTest {
 
 	private ElevatorDoor testElevatorDoor = new ElevatorDoor();
 
+	/**
+	 * JUnit Test Case for Door Operation
+	 */
 	@Test
 	public void testElevatorDoor(){
 		assertNotNull(testElevatorDoor.getElevatorDoor());
 		assertNotEquals("CLOSE", testElevatorDoor.getElevatorDoor());
 	}
 
+	/**
+	 * JUnit Test Case for Door Operation Open
+	 */
 	@Test
 	public void testGetElevatorDoor(){
 		assertNotEquals("CLOSE", testElevatorDoor.getElevatorDoor());
 		assertNotNull(testElevatorDoor.getElevatorDoor());
 	}
 
+	/**
+	 * JUnit Test Case for Door Operation Specification
+	 */
 	@Test
 	public void testSetElevatorDoor(){
 		testElevatorDoor.setElevatorDoor(true);
@@ -37,6 +46,9 @@ public class ElevatorDoorTest {
 		assertNotNull(testElevatorDoor.getElevatorDoor());
 	}
 
+	/**
+	 * JUnit Test Case for Door Operation Close
+	 */
 	@Test
 	public void testDoorClosed(){
 		testElevatorDoor.doorClosed();

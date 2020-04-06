@@ -10,7 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FloorFaultTest
+ * FloorFaultTest (Fault Test)
+ *
  * @author Britney Baker
  * @author Samantha Tripp
  */

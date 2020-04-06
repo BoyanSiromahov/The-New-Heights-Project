@@ -50,7 +50,7 @@ public class Parser
      */
     public static List<String[]> faultReader() {
 
-        String file = String.format("soft_fault_csv.txt");
+        String file = String.format("fault_csv.txt");
         List<String[]> content = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {

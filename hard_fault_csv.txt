@@ -1,2 +1,0 @@
-Time, 	Start Floor, End Floor, Button
-00:00:05,-2,1,ELEVATOR

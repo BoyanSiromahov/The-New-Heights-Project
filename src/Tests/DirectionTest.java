@@ -11,12 +11,17 @@ import static org.junit.Assert.*;
  */
 public class DirectionTest {
 
+	/**
+	 * JUnit Test Case for Directions Enum
+	 */
 	@Test
 	public void enumStringTest() {
 		assertEquals("UP", Direction.UP.toString());
 		assertEquals("DOWN", Direction.DOWN.toString());
 		assertNotNull(Direction.UP.toString());
 		assertNotNull(Direction.DOWN.toString());
+		assertNotEquals("down", Direction.DOWN.toString());
+		assertNotEquals("stop", Direction.DOWN.toString());
 
 	}
 

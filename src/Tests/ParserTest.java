@@ -22,6 +22,9 @@ public class ParserTest {
 		elevatorEventsTest =  parserTest.makeList(Parser.csvReader());
 	}
 
+	/**
+	 * Test for the parser functionality
+	 */
 	@Test
 	public void testMakelist() {
 		assertNotNull(elevatorEventsTest);
@@ -29,16 +32,25 @@ public class ParserTest {
 
 	}
 
+	/**
+	 * Test for getting the start floor
+	 */
 	@Test
 	public void testGetStartFloor() {
 		assertNotEquals(0, elevatorEventsTest.get(0).getStartFloor());
 	}
 
+	/**
+	 * Test for destination floor
+	 */
 	@Test
 	public void testSetEndFloor() {
 		assertNotEquals(0, elevatorEventsTest.get(0).getEndFloor());
 	}
 
+	/**
+	 * Test for fault
+	 */
 	@Test
 	public void testGetFault() {
 		assertNotEquals(0, elevatorEventsTest.get(0).getFault());

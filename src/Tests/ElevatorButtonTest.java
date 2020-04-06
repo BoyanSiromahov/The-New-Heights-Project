@@ -11,6 +11,9 @@ import static org.junit.Assert.*;
  */
 public class ElevatorButtonTest {
 
+	/**
+	 * JUnit Test Case for Elevator Buttons
+	 */
 	@Test
 	public void enumStringTest() {
 		assertEquals("ON", ElevatorButton.ON.toString());

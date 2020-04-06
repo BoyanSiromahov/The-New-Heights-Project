@@ -8,17 +8,17 @@
     
     Elevator.java - The Class represanting elevator car
 		
-    ArrivalSensor.java - The Enum Class represanting the arrival sensor for the elevator 
+    ArrivalSensor.java - The  Class represanting the arrival sensor for the elevator 
 	
     Direction.java - The Enum Class represanting the Direction for the elevator 
     	    
-    ElevatorButton.java - The Enum Class represanting the floor buttons inside the elevator 
+    ElevatorDoor.java - The Class represanting the Elevator Doors 
     
-    ElevatorDoor.java - The Enum Class represanting the elevator doors 
+    ElevatorMotor.java - The Class represanting the elevator Motor  
            
-    ElevatorMotor.java - The Enum Class represanting the elevator motor 
-    
-    State.java - The Class represanting different states of the System (STATE MACHINE) 
+    ElevatorState.java - The Class represanting the elevator subsystem & state  (State Machine)  
+   
+    Faults.java - The Enum Class representing the faults associated with the system 
    
 ### FloorSubSystem
     Author: Samantha Tripp
@@ -87,10 +87,4 @@ Responsibilities
         
 ====================================================================
 
-## Reflection on Concurrency Control 
-Three separate programs are developed with floor, elevator and scheduler as separate programs. 
-Multithreaded approach taken to ensure synchronous communication between the floor and the elevators 
-via scheduler. Scheduler is the main controller of the system with dedicated UDP ports and IP Addresses 
-to communicate between the systems. The Scheduler also coordinates the movement of elevators based on the 
-current floor and the requesting floor. The system's concurrency can be optimised with a fine-grained 
-multithreading (Objective for next iteration) 
+

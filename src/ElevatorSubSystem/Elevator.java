@@ -78,6 +78,22 @@ public class Elevator implements Runnable {
     }
 
     /**
+     * The Getter Method for the state of the elevator
+     * @return State String
+     */
+    public String getElevatorMotorState(){
+        return motor.getElevatorMovement().toString();
+    }
+
+    /**
+     * The Getter Method for the state of the elevator arrival sensor
+     * @return State String
+     */
+    public String elevatorArrivedOnFloor(){
+        return elevatorArrivalSensor.getSensor().toString();
+    }
+
+    /**
      * This can be used to initialize the Elevator Floor Buttons and the Arrival
      * Sensor for each Elevator
      */
@@ -466,7 +482,7 @@ public class Elevator implements Runnable {
      * @param request, The received request
      * @return true, if fault is found (Minor - Soft Fault /Major - Hard Fault)
      */
-    private boolean checkFault(CallEvent request){
+    public boolean checkFault(CallEvent request){
         // Fault Handling
         return (request.getStartFloor() == -1 || request.getStartFloor() == -2);
     }
@@ -488,7 +504,7 @@ public class Elevator implements Runnable {
 
     public static void main(String[] args)
 	{
-        Thread elevatorThread_1, elevatorThread_2, elevatorThread_3;
+        Thread elevatorThread_1, elevatorThread_2;
         elevatorThread_1 = new Thread(new Elevator(1,22),"Elevator NO.1");
         elevatorThread_2 = new Thread(new Elevator(2,24),"Elevator NO.2");
 

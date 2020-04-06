@@ -11,6 +11,9 @@ import static org.junit.Assert.*;
  */
 public class SchedulerStateTest {
 
+    /**
+     * The Scheduler State Test
+     */
     @Test
     public void enumStringTest() {
         assertEquals("E_MOVING", SchedulerState.E_MOVING.toString());

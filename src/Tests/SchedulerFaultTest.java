@@ -5,6 +5,9 @@ import SchedulerSubSystem.Scheduler;
 import java.net.UnknownHostException;
 /**
  * SchedulerFaultTest
+ *
+ * The Tests for fault handling and transmission
+ *
  * @author Britney Baker
  * @author Samantha Tripp
  */

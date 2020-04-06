@@ -16,6 +16,9 @@ public class CallEventTest {
 
     private CallEvent testCallEvent = new CallEvent(new Date(), 1, 5, Direction.UP, null);
 
+    /**
+     * Test Case for call event initialisation & transmission (regular & fault testing)
+     */
     @Test
     public void testGetStartTime() {
         assertNotEquals("00:00:10",testCallEvent.getStartTime());
